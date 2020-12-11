@@ -10,13 +10,20 @@ type Resolvers = {
 
 export const resolvers: Resolvers = {
   "✉️": async (client, reaction, user) => {
-    // todo: make sure its a LFS embed and not from the same person that created the embed
+    // make sure its in the LFS channel
+    if(reaction.message.channel.id !== process.env.LFS_CHANNEL_ID) throw new Error('Forbidden: Invalid lfs channel')
+
     const [embed] = reaction.message.embeds
+    const embedType = embed.footer?.text
+
     const authorEmbed: User | PartialUser | undefined = client.users.cache.find(user => user.id === parseAuthorIdFromLfsEmbed(embed))
     const authorReaction: User | PartialUser = user
 
-    await authorReaction.send(EmbedPmNotice(authorReaction.id))
-    if (authorEmbed) await authorEmbed.send(EmbedPmRequest(authorEmbed.id))
+    // most be a lfs embed and author different from "reactor"
+    if (authorEmbed && authorEmbed?.id !== authorReaction.id && embedType === 'lfs') {
+      await authorReaction.send(EmbedPmNotice(authorEmbed.id))
+      await authorEmbed.send(EmbedPmRequest(authorReaction.id))
+    }
   }
 }
 
@@ -30,6 +37,6 @@ export const reactionsResolver = async (client: Client, reaction: MessageReactio
     const resolver = resolvers[emoji]
     await resolver(client, reaction, user)
   } catch (err) {
-    console.error(`Error running reaction resolver: "${reaction.emoji.name}"`, err.message)
+    console.error(`Error running reaction resolver: "${reaction.emoji.name} - "`, err.message)
   }
 }
