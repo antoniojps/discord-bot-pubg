@@ -2,7 +2,7 @@
   "name": "bot",
   "version": "1.0.0",
   "description": "pubg-pt discord bot for lfs and stats roles",
-  "main": "index.js",
+  "main": "dist/bot.js",
   "author": "antoniojps",
   "license": "MIT",
   "scripts": {
