@@ -24,10 +24,11 @@ export const resolvers: Resolvers = {
     const channel = await client.channels.fetch(process.env.LFS_CHANNEL_ID)
     if (channel.isText()) {
       const messages = await channel.messages.fetch()
-      // find all embeds initiated by the author of this command
+      // find last embed initiated by the author and delete
       const authorEmbedsMessages = messages.filter(m => m.author.bot && m.embeds.length > 0 && parseAuthorIdFromLfsEmbed(m.embeds[0]) === message.author.id)
-      const deleteAllAuthorEmbedsPromise = authorEmbedsMessages.map(m => m.delete())
-      await Promise.all(deleteAllAuthorEmbedsPromise)
+      const firstAuthorEmbedMessage = authorEmbedsMessages.first()
+      await firstAuthorEmbedMessage?.delete()
+
     }
   }
 }
