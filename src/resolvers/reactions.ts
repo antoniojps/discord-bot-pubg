@@ -3,8 +3,11 @@ import { EmbedPmRequest } from '../embeds/PmRequest'
 import { EmbedPmNotice } from '../embeds/PmNotice'
 import { parseAuthorIdFromLfsEmbed } from '../utils/embeds'
 
+type ReactionResolver = (client: Client, reaction: MessageReaction, user: User | PartialUser) => Promise<void>
+
 type Resolvers = {
-  "✉️": (client: Client, reaction: MessageReaction, user: User | PartialUser) => Promise<void>,
+  "✉️": ReactionResolver,
+  "✅": ReactionResolver,
   [key: string]: any,
 }
 
@@ -22,7 +25,20 @@ export const resolvers: Resolvers = {
     // most be a lfs embed and author different from "reactor"
     if (authorEmbed && authorEmbed?.id !== authorReaction.id && embedType === 'lfs') {
       await authorReaction.send(EmbedPmNotice(authorEmbed.id))
-      await authorEmbed.send(EmbedPmRequest(authorReaction.id))
+      const embedPmRequest = await authorEmbed.send(EmbedPmRequest(authorReaction.id))
+      await embedPmRequest.react('✅')
+      await embedPmRequest.react('❌')
+    }
+  },
+  "✅": async (client, reaction, user) => {
+    // make sure its in a PM
+    if (reaction.message.channel.type === 'dm') throw new Error('Forbidden: Invalid dm channel')
+
+    const [embed] = reaction.message.embeds
+    const embedType = embed.footer?.text
+
+    if (embedType === 'lfs') {
+      console.log('should notice the other user that he can join')
     }
   }
 }

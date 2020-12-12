@@ -13,4 +13,5 @@ export const EmbedLookingForSomeone = (message: Message) => {
   `)
   .setThumbnail('https://i.imgur.com/wSTFkRM.png')
   .setFooter("lfs")
+  .setTimestamp()
 }
