@@ -6,7 +6,19 @@
   "author": "antoniojps",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon dist/bot.js"
+    "commit": "git-cz",
+    "start": "nodemon dist/bot.js",
+    "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "eslint --fix"
+    ]
   },
   "dependencies": {
     "@types/lodash": "^4.14.165",
@@ -17,6 +29,16 @@
   },
   "devDependencies": {
     "@types/node": "^14.14.12",
-    "nodemon": "^2.0.6"
+    "@typescript-eslint/eslint-plugin": "^4.9.1",
+    "@typescript-eslint/parser": "^4.9.1",
+    "eslint": "^7.15.0",
+    "eslint-config-prettier": "^7.0.0",
+    "eslint-plugin-prettier": "^3.2.0",
+    "git-cz": "^4.7.6",
+    "husky": "^4.3.6",
+    "lint-staged": "^10.5.3",
+    "nodemon": "^2.0.6",
+    "prettier": "^2.2.1",
+    "typescript": "^4.1.3"
   }
 }
