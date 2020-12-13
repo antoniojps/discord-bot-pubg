@@ -1,13 +1,17 @@
+import argv from 'yargs-parser';
 import { Client, Message } from 'discord.js';
 import { EmbedLookingForSomeone } from '../embeds/LookingForSomeone';
+import { EmbedErrorMessage, EmbedError } from '../embeds/Error';
 import { parseAuthorIdFromLfsEmbed } from '../utils/embeds';
+import User from './../models/user';
 
-type CommandResolver = (client: Client, message: Message) => Promise<void>;
+type CommandResolver = (client: Client, message: Message, argumentsParsed: argv.Arguments) => Promise<void>;
 
 type Resolvers = {
   lfs: CommandResolver;
   '-': CommandResolver;
-  [key: string]: any;
+  '/link': CommandResolver;
+  [key: string]: CommandResolver;
 };
 
 export const resolvers: Resolvers = {
@@ -32,18 +36,38 @@ export const resolvers: Resolvers = {
       await firstAuthorEmbedMessage?.delete();
     }
   },
+  '/link': async (client, message, argumentsParsed) => {
+    const pubgNickname = argumentsParsed._[1] || '';
+
+    if (pubgNickname === '') {
+      throw new EmbedError(
+        `<@${message.author.id}> para fazer link da conta é necessário dizer o nome no pubg, exemplo:  \`/link NICK_DO_PUBG\``,
+      );
+    }
+
+    const linkedUser = await User.linkPubgAccount({
+      discordId: message.author.id,
+      pubgNickname,
+    });
+
+    await message.channel.send(`<@${message.author.id}>, nick atualizado para ${linkedUser.pubgNickname}`);
+  },
 };
 
 export const COMMANDS = Object.keys(resolvers);
 
 export const commandsResolver = async (client: Client, message: Message) => {
-  const command = message.content.toLowerCase().trim();
+  const commandArgv = argv(message.content);
+
+  const [command] = commandArgv._;
   if (!COMMANDS.includes(command) || message.channel.id !== process.env.LFS_CHANNEL_ID) return null;
 
   try {
     const resolver = resolvers[command];
-    await resolver(client, message);
+    await resolver(client, message, commandArgv);
   } catch (err) {
-    console.error(`Error running command resolver: "${command}"`, err.message);
+    if (err.name === 'EmbedError') {
+      await message.channel.send(EmbedErrorMessage(err.message));
+    } else console.error(`Error running command resolver: "${command}"`, err.message);
   }
 };
