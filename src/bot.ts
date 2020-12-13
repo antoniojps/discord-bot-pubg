@@ -2,13 +2,15 @@ import { Client } from 'discord.js';
 import dotenv from 'dotenv';
 import { commandsResolver } from './resolvers/commands';
 import { reactionsResolver } from './resolvers/reactions';
+import mongo from './services/database';
 
 dotenv.config();
 const client = new Client({ partials: ['GUILD_MEMBER', 'USER', 'REACTION'] });
 
 client.login(process.env.DISCORDJS_BOT_TOKEN);
 
-client.on('ready', () => {
+client.on('ready', async () => {
+  await mongo();
   console.log(`${client?.user?.tag} has logged in.`);
 });
 
