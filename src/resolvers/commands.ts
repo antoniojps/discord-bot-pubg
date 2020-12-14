@@ -16,13 +16,14 @@ type Resolvers = {
 
 export const resolvers: Resolvers = {
   lfs: async (client, message) => {
-    await message.delete();
+    if (message.channel.id !== process.env.LFS_CHANNEL_ID) return;
 
+    await message.delete();
     const embed = await message.channel.send(EmbedLookingForSomeone(message));
     await embed.react('✉️');
   },
   '-': async (client, message) => {
-    if (!process.env.LFS_CHANNEL_ID) return;
+    if (message.channel.id !== process.env.LFS_CHANNEL_ID) return;
 
     await message.delete();
     const channel = await client.channels.fetch(process.env.LFS_CHANNEL_ID);
@@ -37,6 +38,8 @@ export const resolvers: Resolvers = {
     }
   },
   '/link': async (client, message, argumentsParsed) => {
+    if (message.channel.id !== process.env.ROLES_CHANNEL_ID) return;
+
     const pubgNickname = argumentsParsed._[1] || '';
 
     if (pubgNickname === '') {
@@ -60,7 +63,7 @@ export const commandsResolver = async (client: Client, message: Message) => {
   const commandArgv = argv(message.content);
 
   const [command] = commandArgv._;
-  if (!COMMANDS.includes(command) || message.channel.id !== process.env.LFS_CHANNEL_ID) return null;
+  if (!COMMANDS.includes(command)) return null;
 
   try {
     const resolver = resolvers[command];
