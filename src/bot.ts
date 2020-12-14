@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { commandsResolver } from './resolvers/commands';
 import { reactionsResolver } from './resolvers/reactions';
 import mongo from './services/database';
+import setupRoles from './services/roles';
 
 dotenv.config();
 const client = new Client({ partials: ['GUILD_MEMBER', 'USER', 'REACTION'] });
@@ -10,8 +11,15 @@ const client = new Client({ partials: ['GUILD_MEMBER', 'USER', 'REACTION'] });
 client.login(process.env.DISCORDJS_BOT_TOKEN);
 
 client.on('ready', async () => {
-  await mongo();
   console.log(`${client?.user?.tag} has logged in.`);
+
+  // connect to db
+  await mongo();
+
+  // setup roles
+  const guild = process.env.DISCORD_SERVER_ID ? await client.guilds.fetch(process.env.DISCORD_SERVER_ID) : null;
+  if (!guild) throw new Error('Invalid guild ID');
+  await setupRoles(guild);
 });
 
 client.on('error', (error) => {
