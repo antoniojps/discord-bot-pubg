@@ -1,5 +1,6 @@
 import mongoose, { Model, Document } from 'mongoose';
 import { EmbedError } from './../embeds/Error';
+import { getPlayerStats } from './../services/pubg';
 
 const UserSchema = new mongoose.Schema({
   discordId: {
@@ -40,13 +41,15 @@ UserSchema.statics = {
   async linkPubgAccount({ discordId, pubgNickname }: LinkProps) {
     // find in DB
     const userWithNick: UserDocument = await this.findOne({ pubgNickname });
-
     if (userWithNick) {
       throw new EmbedError(`user <@${userWithNick.discordId}> already linked to pubg account ${pubgNickname}`);
     }
 
     const userFromDB: UserDocument = await this.findOne({ discordId });
     if (userFromDB) {
+      const stats = await getPlayerStats(pubgNickname);
+      // todo: save to db and add roles
+      console.log(stats);
       // update nickname
       userFromDB.pubgNickname = pubgNickname;
       const userFromDBUpdated = await userFromDB.save();
