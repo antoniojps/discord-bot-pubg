@@ -69,11 +69,12 @@ const ROLES: Roles = [
 ];
 
 export default async (guild: Guild) => {
-  await Promise.race(
-    guild.roles.cache.map(async (r) => {
-      if (r.name !== 'Supreme bot') await r.delete();
-    }),
-  );
+  // // delete
+  // await Promise.race(
+  //   guild.roles.cache.map(async (r) => {
+  //     if (r.name !== 'Supreme bot') await r.delete();
+  //   }),
+  // );
 
   const createRolesPromises = ROLES.filter((role) => {
     const alreadyExists = guild.roles.cache.find((r) => r.name === role.name);
