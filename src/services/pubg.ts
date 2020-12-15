@@ -115,11 +115,16 @@ const getPlayerId = async (player: string): Promise<string> => {
       data: { data },
     } = await pubg.get(url);
     const accountId = data[0].id || null;
-    if (!accountId) throw new EmbedError(`Não encontramos nenhum jogador com o nickname \`${player}\``);
+    if (!accountId)
+      throw new EmbedError(
+        `Não encontramos nenhum jogador com o nickname \`${player}\`. Tens de escrever o nome do PUBG com as letras exatamente iguais ao PUBG (minúsculas e maiúsculas).`,
+      );
     return accountId;
   } catch (err) {
     if (err.response.status === 404)
-      throw new EmbedError(`Não encontramos nenhum jogador com o nickname \`${player}\``);
+      throw new EmbedError(
+        `Não encontramos nenhum jogador com o nickname \`${player}\`.  Tens de escrever o nome do PUBG com as letras exatamente iguais ao PUBG (minúsculas e maiúsculas).`,
+      );
     else throw Error(err);
   }
 };

@@ -34,7 +34,7 @@ export const resolvers: Resolvers = {
   },
   '✅': async (client, reaction, user) => {
     // make sure its in a PM
-    if (reaction.message.channel.type === 'dm') throw new Error('Forbidden: Invalid dm channel');
+    if (reaction.message.channel.type !== 'dm') throw new Error('Forbidden: Invalid dm channel');
 
     const [embed] = reaction.message.embeds;
     const embedType = embed.footer?.text;

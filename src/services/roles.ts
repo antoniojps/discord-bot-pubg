@@ -43,8 +43,8 @@ export const KD = {
 };
 
 const ROLES: Roles = [
-  { name: RANKS.Master, color: [47, 204, 113] },
-  { name: RANKS.Diamond, color: [229, 229, 229] },
+  { name: RANKS.Master, color: [0, 255, 109] },
+  { name: RANKS.Diamond, color: [9, 249, 255] },
   { name: RANKS.Platinum, color: [33, 103, 148] },
   { name: RANKS.Gold, color: [214, 177, 99] },
   { name: RANKS.Silver, color: [121, 138, 150] },
