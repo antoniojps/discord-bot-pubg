@@ -11,6 +11,11 @@ function roundHundredth(number: number) {
   return Math.round(number * 100) / 100;
 }
 
+function toPercentage(number: number) {
+  const percentage = number * 100;
+  return Math.round(percentage);
+}
+
 // config
 const pubg = axios.create({
   baseURL: 'https://api.playbattlegrounds.com/shards/steam',
@@ -84,6 +89,8 @@ type Stats = {
   kd: number;
   avgDamage: number;
   bestRank: string;
+  winRatio: number;
+  roundsPlayed: number;
 };
 
 const getCurrentSeason = async (): Promise<PubgSeason> => {
@@ -143,6 +150,7 @@ export const getPlayerStats = async (player: string): Promise<Stats> => {
     const damageDealt = get(pubgStats, 'damageDealt', NaN);
     const kills = get(pubgStats, 'kills', NaN);
     const bestRank = get(pubgStats, 'bestTier.tier', undefined);
+    const winRatio = get(pubgStats, 'winRatio', NaN);
 
     const kd = kills / (roundsPlayed - wins);
     const avgDamage = damageDealt / roundsPlayed;
@@ -155,6 +163,8 @@ export const getPlayerStats = async (player: string): Promise<Stats> => {
       kd: roundHundredth(kd),
       avgDamage: roundHundredth(avgDamage),
       bestRank,
+      winRatio: toPercentage(winRatio),
+      roundsPlayed,
     };
   } catch (err) {
     if (err.name === 'EmbedError') {
