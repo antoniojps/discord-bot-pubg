@@ -46,22 +46,25 @@ export const resolvers: Resolvers = {
 
     if (pubgNickname === '') {
       throw new EmbedError(
-        `<@${message.author.id}> para fazer link da conta é necessário dizer o nome no pubg, exemplo:  \`/link NICK_DO_PUBG\``,
+        `<@${message.author.id}> para associar a tua conta é necessário dizer o nome no pubg, exemplo:  \`/link NICK_DO_PUBG\``,
       );
     }
+
+    const feedbackMessage = await message.channel.send('A associar contas...');
 
     const { stats } = await User.linkPubgAccount({
       discordId: message.author.id,
       pubgNickname,
     });
 
-    await message.channel.send(
+    await feedbackMessage.edit(
       EmbedSuccessMessage(
         `Ligaste a conta [${pubgNickname}](https://pubg.op.gg/user/${pubgNickname}) à tua conta de Discord!`,
       ),
     );
-    if (stats?.bestRank && stats.avgDamage && stats.kd && stats.winRatio) {
-      await message.channel.send(
+    if (stats?.bestRank && stats?.avgDamage && stats?.kd && stats?.winRatio && message?.member) {
+      await addStatsRoles(message.member, stats);
+      await feedbackMessage.edit(
         `<@${message.author.id}>, **Modo**: Squad-FPP, **Rank** (maior): ${stats.bestRank}, **ADR**: ${stats.avgDamage}, **K/D**: ${stats.kd}, **WR**: ${stats.winRatio}%`,
       );
     }
@@ -69,11 +72,13 @@ export const resolvers: Resolvers = {
   '/update': async (client, message) => {
     if (message.channel.id !== process.env.ROLES_CHANNEL_ID) return;
 
+    const feedbackMessage = await message.channel.send('A atualizar...');
+
     const updatedUser = await User.updatePubgStats({
       discordId: message.author.id,
     });
 
-    await message.channel.send(
+    await feedbackMessage.edit(
       EmbedSuccessMessage(
         `Conta atualizada [${updatedUser.pubgNickname}](https://pubg.op.gg/user/${updatedUser.pubgNickname}).`,
       ),
@@ -87,7 +92,7 @@ export const resolvers: Resolvers = {
       message?.member
     ) {
       await addStatsRoles(message.member, updatedUser.stats);
-      await message.channel.send(
+      await feedbackMessage.edit(
         `<@${message.author.id}>, **Modo**: Squad-FPP, **Rank** (maior): ${updatedUser.stats.bestRank}, **ADR**: ${updatedUser.stats.avgDamage}, **K/D**: ${updatedUser.stats.kd}, **WR**: ${updatedUser.stats.winRatio}%`,
       );
     }

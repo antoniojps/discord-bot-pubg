@@ -81,18 +81,36 @@ const computeRoleNameFromStats = (role: RoleGeneric, stat: number, type: 'KD' | 
   return `${statRole} ${type}`;
 };
 
-export const addStatsRoles = async (member: GuildMember, stats: Stats) => {
+const removeRoles = async (member: GuildMember) => {
+  const rolesToBeRemoved = member.roles.cache.filter((role) => {
+    const statsRolesFound = ROLES.filter((r) => r.name === role.name);
+    const statsRolesNamefound = statsRolesFound.map((roleFound) => roleFound.name);
+    return statsRolesNamefound.includes(role.name);
+  });
+  const removeRolesPromises = rolesToBeRemoved.map((role) => member.roles.remove(role));
+  await Promise.all(removeRolesPromises);
+};
+
+const addRoles = async (member: GuildMember, stats: Stats) => {
   const kdRoleName = computeRoleNameFromStats(KD, stats.kd, 'KD', 5);
   const adrRoleName = computeRoleNameFromStats(ADR, stats.avgDamage, 'ADR', 500);
   const rankRoleName = RANKS[stats.bestRank];
   const rolesNameToBeAssigned = [kdRoleName, adrRoleName, rankRoleName];
-
   const roles = await member.guild.roles.fetch();
+
+  // add new stats roles
   const rolesToBeAssigned = roles.cache.filter((role) => {
     return rolesNameToBeAssigned.includes(role.name);
   });
 
-  await member.roles.add(rolesToBeAssigned);
+  const addRolesPromises = rolesToBeAssigned.map((role) => member.roles.add(role));
+  await Promise.all(addRolesPromises);
+};
+
+export const addStatsRoles = async (member: GuildMember, stats: Stats) => {
+  // remove previous roles
+  await removeRoles(member);
+  await addRoles(member, stats);
 };
 
 export default async (guild: Guild) => {
