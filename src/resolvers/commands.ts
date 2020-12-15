@@ -4,6 +4,7 @@ import { EmbedLookingForSomeone } from '../embeds/LookingForSomeone';
 import { EmbedErrorMessage, EmbedError } from '../embeds/Error';
 import { EmbedSuccessMessage } from '../embeds/Success';
 import { parseAuthorIdFromLfsEmbed } from '../utils/embeds';
+import { addStatsRoles } from '../services/roles';
 import User from './../models/user';
 
 type CommandResolver = (client: Client, message: Message, argumentsParsed: argv.Arguments) => Promise<void>;
@@ -49,7 +50,7 @@ export const resolvers: Resolvers = {
       );
     }
 
-    const linkedUser = await User.linkPubgAccount({
+    const { stats } = await User.linkPubgAccount({
       discordId: message.author.id,
       pubgNickname,
     });
@@ -59,12 +60,13 @@ export const resolvers: Resolvers = {
         `Ligaste a conta [${pubgNickname}](https://pubg.op.gg/user/${pubgNickname}) à tua conta de Discord!`,
       ),
     );
-
-    await message.channel.send(
-      `<@${message.author.id}>, **Modo**: Squad-FPP, **Rank** (maior): ${linkedUser.bestRank}, **ADR**: ${linkedUser.avgDamage}, **K/D**: ${linkedUser.kd}, **WR**: ${linkedUser.winRatio}%`,
-    );
+    if (stats?.bestRank && stats.avgDamage && stats.kd && stats.winRatio) {
+      await message.channel.send(
+        `<@${message.author.id}>, **Modo**: Squad-FPP, **Rank** (maior): ${stats.bestRank}, **ADR**: ${stats.avgDamage}, **K/D**: ${stats.kd}, **WR**: ${stats.winRatio}%`,
+      );
+    }
   },
-  '/update': async (client, message, argumentsParsed) => {
+  '/update': async (client, message) => {
     if (message.channel.id !== process.env.ROLES_CHANNEL_ID) return;
 
     const updatedUser = await User.updatePubgStats({
@@ -77,9 +79,18 @@ export const resolvers: Resolvers = {
       ),
     );
 
-    await message.channel.send(
-      `<@${message.author.id}>, **Modo**: Squad-FPP, **Rank** (maior): ${updatedUser.bestRank}, **ADR**: ${updatedUser.avgDamage}, **K/D**: ${updatedUser.kd}, **WR**: ${updatedUser.winRatio}%`,
-    );
+    if (
+      updatedUser?.stats?.bestRank &&
+      updatedUser?.stats?.avgDamage &&
+      updatedUser?.stats?.kd &&
+      updatedUser?.stats?.winRatio &&
+      message?.member
+    ) {
+      await addStatsRoles(message.member, updatedUser.stats);
+      await message.channel.send(
+        `<@${message.author.id}>, **Modo**: Squad-FPP, **Rank** (maior): ${updatedUser.stats.bestRank}, **ADR**: ${updatedUser.stats.avgDamage}, **K/D**: ${updatedUser.stats.kd}, **WR**: ${updatedUser.stats.winRatio}%`,
+      );
+    }
   },
 };
 

@@ -1,6 +1,6 @@
 import mongoose, { Model, Document } from 'mongoose';
 import { EmbedError } from './../embeds/Error';
-import { getPlayerStats } from './../services/pubg';
+import { getPlayerStats, Stats } from './../services/pubg';
 
 const UserSchema = new mongoose.Schema({
   discordId: {
@@ -13,24 +13,29 @@ const UserSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  kd: {
-    type: Number,
-    sparce: true,
-  },
-  avgDamage: {
-    type: Number,
-    sparce: true,
-  },
-  winRatio: {
-    type: Number,
-    sparce: true,
-  },
-  bestRank: {
-    type: String,
-    sparce: true,
-  },
-  roundsPlayed: {
-    type: Number,
+  stats: {
+    type: {
+      kd: {
+        type: Number,
+        sparce: true,
+      },
+      avgDamage: {
+        type: Number,
+        sparce: true,
+      },
+      winRatio: {
+        type: Number,
+        sparce: true,
+      },
+      bestRank: {
+        type: String,
+        sparce: true,
+      },
+      roundsPlayed: {
+        type: Number,
+        sparce: true,
+      },
+    },
     sparce: true,
   },
 });
@@ -38,11 +43,7 @@ const UserSchema = new mongoose.Schema({
 interface UserDocument extends Document {
   discordId: string;
   pubgNickname: string;
-  kd?: number | null;
-  avgDamage?: number | null;
-  winRatio?: number | null;
-  roundsPlayed?: number | null;
-  bestRank?: string | null;
+  stats?: Stats | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -69,15 +70,15 @@ UserSchema.statics = {
     const userWithNick: UserDocument = await this.findOne({ pubgNickname });
     if (userWithNick) {
       throw new EmbedError(
-        `Utilizador <@${userWithNick.discordId}> já està ligado a esta conta de pubg **${pubgNickname}**, se é a tua conta entre em contacto com a administração.`,
+        `<@${userWithNick.discordId}> já està ligado a esta conta de pubg **${pubgNickname}**. Se pretendes atualizar usa \`/update\``,
       );
     }
 
     // get player stats from pubg api
-    const { kd, avgDamage, bestRank, winRatio, roundsPlayed } = await getPlayerStats(pubgNickname);
+    const stats = await getPlayerStats(pubgNickname);
     const newPlayer = await User.findOneAndUpdate(
       { discordId },
-      { discordId, pubgNickname, kd, avgDamage, bestRank, winRatio, roundsPlayed },
+      { discordId, pubgNickname, stats },
       {
         new: true,
         upsert: true,
@@ -95,12 +96,8 @@ UserSchema.statics = {
     }
 
     // get player stats from pubg api and update
-    const { kd, avgDamage, bestRank, winRatio, roundsPlayed } = await getPlayerStats(user.pubgNickname);
-    user.kd = kd;
-    user.avgDamage = avgDamage;
-    user.bestRank = bestRank;
-    user.winRatio = winRatio;
-    user.roundsPlayed = roundsPlayed;
+    const stats = await getPlayerStats(user.pubgNickname);
+    user.stats = stats;
     await user.save();
     return user;
   },

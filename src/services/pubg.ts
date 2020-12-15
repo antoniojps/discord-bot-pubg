@@ -35,14 +35,15 @@ type PubgSeason = {
   };
 };
 
+export type PubgTier = 'Master' | 'Diamond' | 'Platinum' | 'Gold' | 'Silver' | 'Bronze';
 interface PubgRankedStats {
   currentTier: {
-    tier: string;
+    tier: PubgTier;
     subTier: string;
   };
   currentRankPoint: number;
   bestTier: {
-    tier: string;
+    tier: PubgTier;
     subTier: string;
   };
   bestRankPoint: number;
@@ -85,10 +86,10 @@ type PubgPlayerResponse = {
   };
 };
 
-type Stats = {
+export type Stats = {
   kd: number;
   avgDamage: number;
-  bestRank: string;
+  bestRank: PubgTier;
   winRatio: number;
   roundsPlayed: number;
 };
