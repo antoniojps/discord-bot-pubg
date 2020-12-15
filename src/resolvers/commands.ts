@@ -2,6 +2,7 @@ import argv from 'yargs-parser';
 import { Client, Message } from 'discord.js';
 import { EmbedLookingForSomeone } from '../embeds/LookingForSomeone';
 import { EmbedErrorMessage, EmbedError } from '../embeds/Error';
+import { EmbedSuccessMessage } from '../embeds/Success';
 import { parseAuthorIdFromLfsEmbed } from '../utils/embeds';
 import User from './../models/user';
 
@@ -53,7 +54,32 @@ export const resolvers: Resolvers = {
       pubgNickname,
     });
 
-    await message.channel.send(`<@${message.author.id}>, nick atualizado para ${linkedUser.pubgNickname}`);
+    await message.channel.send(
+      EmbedSuccessMessage(
+        `Ligaste a conta [${pubgNickname}](https://pubg.op.gg/user/${pubgNickname}) à tua conta de Discord!`,
+      ),
+    );
+
+    await message.channel.send(
+      `<@${message.author.id}>, **Modo**: Squad-FPP, **Rank** (maior): ${linkedUser.bestRank}, **ADR**: ${linkedUser.avgDamage}, **K/D**: ${linkedUser.kd}, **WR**: ${linkedUser.winRatio}%`,
+    );
+  },
+  '/update': async (client, message, argumentsParsed) => {
+    if (message.channel.id !== process.env.ROLES_CHANNEL_ID) return;
+
+    const updatedUser = await User.updatePubgStats({
+      discordId: message.author.id,
+    });
+
+    await message.channel.send(
+      EmbedSuccessMessage(
+        `Conta atualizada [${updatedUser.pubgNickname}](https://pubg.op.gg/user/${updatedUser.pubgNickname}).`,
+      ),
+    );
+
+    await message.channel.send(
+      `<@${message.author.id}>, **Modo**: Squad-FPP, **Rank** (maior): ${updatedUser.bestRank}, **ADR**: ${updatedUser.avgDamage}, **K/D**: ${updatedUser.kd}, **WR**: ${updatedUser.winRatio}%`,
+    );
   },
 };
 

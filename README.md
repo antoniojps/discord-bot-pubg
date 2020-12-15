@@ -31,6 +31,7 @@ This bot aims to be used in the PUBG PT discord community. The plan is to make a
   | `lfs`     | `LFS_CHANNEL_ID`  | Creates a LFS embed |
   | `-`     | `LFS_CHANNEL_ID`  | Deletes the last LFS embed of the author |
   | `/link PUBG_NICKNAME`     | `ROLES_CHANNEL_ID`  | Assigns a pubg nickname to the author and roles according to stats |
+  | `/update`     | `ROLES_CHANNEL_ID`  | Updates user pubg stats for users already linked |
   | `/restart`     | `ADMIN_CHANNEL_ID`  | Removes all rank roles (maintains stats), to be used in the beginning of a new season |
 
 ### Usage
