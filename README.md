@@ -11,9 +11,10 @@ Don't be a crybaby: clone, install and run the commands
 ## How to run this app
 
 1. Clone this repository: `git clone git@github.com:antoniojps/discord-bot-pubg.git`
-1. `cd discord-bot-pubg`
-1. `yarn install`
-1. `yarn start`
+2. `cd discord-bot-pubg`
+3. `yarn install`
+4. `yarn start`
+
 
 ## Available commands
 
@@ -24,6 +25,10 @@ Don't be a crybaby: clone, install and run the commands
 ## Bot
 
 This bot aims to be used in the PUBG PT discord community. The plan is to make a LFS system and automatic roles according to PUBG ranked games stats.
+
+
+### Server installation
+Add the bot the server, to do so visit the link: `https://discord.com/oauth2/authorize?client_id=BOT_CLIENT_ID&scope=bot`
 
 ### Available commands
   | Command          | Channel  | Description  |
