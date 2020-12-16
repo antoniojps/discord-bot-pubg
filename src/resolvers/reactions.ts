@@ -1,7 +1,9 @@
 import { Client, MessageReaction, User, PartialUser } from 'discord.js';
 import { EmbedPmRequest } from '../embeds/PmRequest';
-import { EmbedPmNotice } from '../embeds/PmNotice';
+import { EmbedPmNotice, EmbedPmNoticeAccept } from '../embeds/PmNotice';
+import { EmbedPmRequestAccept } from '../embeds/PmRequest';
 import { parseAuthorIdFromLfsEmbed } from '../utils/embeds';
+import { parseUserIdFromMention } from '../utils/helpers';
 
 type ReactionResolver = (client: Client, reaction: MessageReaction, user: User | PartialUser) => Promise<void>;
 
@@ -40,7 +42,19 @@ export const resolvers: Resolvers = {
     const embedType = embed.footer?.text;
 
     if (embedType === 'lfs') {
-      console.log('should notice the other user that he can join');
+      const lfsReactionAuthorId = embed.description ? parseUserIdFromMention(embed.description) : null;
+      if (lfsReactionAuthorId && process.env.DISCORD_SERVER_ID) {
+        await reaction.message.edit(EmbedPmRequestAccept(lfsReactionAuthorId));
+
+        const lfsReactionAuthor = client.users.cache.find((user) => user.id === lfsReactionAuthorId);
+        const guild = await client.guilds.fetch(process.env.DISCORD_SERVER_ID);
+        const member = await guild.members.fetch(user.id);
+        const lfsAuthorChannel = member.voice.channel;
+        const lfsAuthorChannelInvite = await lfsAuthorChannel?.createInvite();
+        const lfsAuthorChannelName = lfsAuthorChannel?.toString();
+
+        lfsReactionAuthor?.send(EmbedPmNoticeAccept(user.id, lfsAuthorChannelName, lfsAuthorChannelInvite?.url));
+      }
     }
   },
 };
