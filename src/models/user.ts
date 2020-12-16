@@ -40,10 +40,12 @@ const UserSchema = new mongoose.Schema({
   },
 });
 
-interface UserDocument extends Document {
+export interface UserPartial {
   discordId: string;
   pubgNickname: string;
   stats?: Stats | null;
+}
+export interface UserDocument extends UserPartial, Document {
   createdAt: string;
   updatedAt: string;
 }

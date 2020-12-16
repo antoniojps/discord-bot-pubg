@@ -5,6 +5,7 @@ import { EmbedErrorMessage, EmbedError } from '../embeds/Error';
 import { EmbedSuccessMessage } from '../embeds/Success';
 import { parseAuthorIdFromLfsEmbed } from '../utils/embeds';
 import { addStatsRoles } from '../services/roles';
+import { computeChannelUsers, computeUserPartialFromDocument } from './../utils/helpers';
 import User from './../models/user';
 
 type CommandResolver = (client: Client, message: Message, argumentsParsed: argv.Arguments) => Promise<void>;
@@ -19,10 +20,26 @@ type Resolvers = {
 export const resolvers: Resolvers = {
   lfs: async (client, message) => {
     if (message.channel.id !== process.env.LFS_CHANNEL_ID) return;
-
     await message.delete();
-    const embed = await message.channel.send(EmbedLookingForSomeone(message));
-    await embed.react('✉️');
+
+    const authorChannel = message.member?.voice.channel;
+
+    if (authorChannel && authorChannel.members.size > 0) {
+      const authorChannelUsersDiscordIds = authorChannel?.members.map((member) => member.user.id);
+      const channelUsersDocuments = await User.find({ discordId: { $in: authorChannelUsersDiscordIds } });
+      const channelUsersWithStats = computeChannelUsers(
+        authorChannel?.members,
+        channelUsersDocuments,
+        message.author.id,
+      );
+      const embed = await message.channel.send(EmbedLookingForSomeone(message, channelUsersWithStats, authorChannel));
+      await embed.react('✉️');
+    } else {
+      const authorDocument = await User.findOne({ discordId: message.author.id });
+      const users = [computeUserPartialFromDocument(message.author.id, authorDocument)];
+      const embed = await message.channel.send(EmbedLookingForSomeone(message, users));
+      await embed.react('👍');
+    }
   },
   '-': async (client, message) => {
     if (message.channel.id !== process.env.LFS_CHANNEL_ID) return;

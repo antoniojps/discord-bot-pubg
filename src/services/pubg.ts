@@ -5,7 +5,7 @@ import { get } from 'lodash';
 
 dotenv.config();
 
-const MINIMUM_GAMES = 20;
+const MINIMUM_GAMES = 8;
 
 function roundHundredth(number: number) {
   return Math.round(number * 100) / 100;
@@ -80,7 +80,6 @@ type PubgPlayerResponse = {
     attributes: {
       rankedGameModeStats?: {
         'squad-fpp'?: PubgRankedStats;
-        'solo-fpp'?: PubgRankedStats;
       };
     };
   };

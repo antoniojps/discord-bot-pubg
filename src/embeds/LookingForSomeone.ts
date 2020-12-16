@@ -1,22 +1,32 @@
-import { MessageEmbed, Message } from 'discord.js';
+import { MessageEmbed, Message, VoiceChannel } from 'discord.js';
+import { UserPartial } from './../models/user';
 
-export const EmbedLookingForSomeone = (message: Message) => {
-  return new MessageEmbed()
+export const EmbedLookingForSomeone = (message: Message, users?: UserPartial[], channel?: VoiceChannel | null) => {
+  const usersList = users?.map((user) => {
+    if (user.pubgNickname === '' || user.stats === undefined) return `\n<@${user.discordId}> ¯\\_(ツ)_/¯`;
+    return `\n**[${user?.pubgNickname}](https://pubg.op.gg/user/${user?.pubgNickname})** - ${user?.stats?.bestRank}, KD ${user?.stats?.kd}, ADR ${user?.stats?.avgDamage}, WR ${user?.stats?.winRatio}%`;
+  });
+
+  const missingPlayers = users && users.length ? ` +${4 - users.length} ` : ' ';
+  const title = channel ? `Procura${missingPlayers}jogadores - #${channel.name}` : `Procura${missingPlayers}jogadores`;
+  const conclusion = channel ? `Para te juntares envia PM <@${message.author.id}> :incoming_envelope:` : '';
+
+  const Embed = new MessageEmbed()
     .setColor('#0099ff')
-    .setAuthor(
-      `${message.author.username} looking for players`,
-      `https://cdn.discordapp.com/avatars/${message.author.id}/${message.author.avatar}.png?size=128`,
-    )
     .setDescription(
       `
-    [${message.author.username}](https://pubg.op.gg/user/${message.author.username}) - Diamond, KD 1.7+, WR 12%
-    [${message.author.username}](https://pubg.op.gg/user/${message.author.username}) - Diamond, KD 1.7+, WR 12%
-    [${message.author.username}](https://pubg.op.gg/user/${message.author.username}) - Diamond, KD 1.7+, WR 12%
+        ${usersList}
 
-    Para te juntares manda PM <@${message.author.id}> :incoming_envelope:
-  `,
+        ${conclusion}
+      `,
     )
-    .setThumbnail('https://i.imgur.com/wSTFkRM.png')
     .setFooter('lfs')
     .setTimestamp();
+
+  if (channel)
+    Embed.setThumbnail('https://i.imgur.com/wSTFkRM.png').setAuthor(
+      title,
+      `https://cdn.discordapp.com/avatars/${message.author.id}/${message.author.avatar}.png?size=128`,
+    );
+  return Embed;
 };
