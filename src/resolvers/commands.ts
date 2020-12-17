@@ -133,13 +133,13 @@ export const commandsResolver = async (client: Client, message: Message) => {
   if (!COMMANDS.includes(command)) return null;
 
   try {
-    await AntiSpam.log(message.author.id, message.content);
+    AntiSpam.log(message.author.id, message.content);
     const isSpamDetected = await AntiSpam.checkMessageInterval(message); // Check sent messages interval
     if (isSpamDetected) {
       await message.delete();
       throw new Error(`Spam detected: ${message.content} by ${message.author.id}`);
-      return;
     }
+
     const resolver = resolvers[command];
     await resolver(client, message, commandArgv);
   } catch (err) {
