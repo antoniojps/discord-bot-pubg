@@ -25,7 +25,7 @@ export const ADR = {
   '400': '400 ADR',
   '450': '450 ADR',
   '500': '500 ADR',
-  '600': '+500 ADR',
+  '550': '+550 ADR',
 };
 
 export const KD = {
@@ -39,7 +39,7 @@ export const KD = {
   '4': '4 KD',
   '4.5': '4.5 KD',
   '5': '5 KD',
-  '6': '+5 KD',
+  '6': '+6 KD',
 };
 
 const ROLES: Roles = [
@@ -58,7 +58,7 @@ const ROLES: Roles = [
   { name: ADR['400'], color: [234, 120, 44], hoist: true },
   { name: ADR['450'], color: [234, 120, 44], hoist: true },
   { name: ADR['500'], color: [230, 76, 61], hoist: true },
-  { name: ADR['600'], color: [230, 76, 61], hoist: true },
+  { name: ADR['550'], color: [230, 76, 61], hoist: true },
   { name: KD['0.5'], color: [147, 112, 219] },
   { name: KD['1'], color: [147, 112, 219] },
   { name: KD['1.5'], color: [147, 112, 219] },
