@@ -1,13 +1,14 @@
-import { MessageEmbed, Message } from 'discord.js';
+import { Message } from 'discord.js';
+import { millisToMinutes } from '../utils/helpers';
 
 type Authors = {
   time: number;
-  author: string;
+  authorId: string;
 }[];
 
 type MessageLogs = {
   message: string;
-  author: string;
+  authorId: string;
 }[];
 
 class AntiSpam {
@@ -24,13 +25,13 @@ class AntiSpam {
   private logAuthor(authorId: string) {
     return this.authors.push({
       time: Math.floor(Date.now()),
-      author: authorId,
+      authorId,
     });
   }
   private logMessage(authorId: string, message: string) {
     return this.messageLog.push({
       message,
-      author: authorId,
+      authorId,
     });
   }
 
@@ -45,7 +46,7 @@ class AntiSpam {
     }
     let msgMatch = 0;
     this.messageLog.forEach((log) => {
-      if (log.message === msg.content && log.author === msg.author.id) {
+      if (log.message === msg.content && log.authorId === msg.author.id) {
         msgMatch++;
       }
     });
@@ -65,7 +66,9 @@ class AntiSpam {
           if (this.authors[i].time > now - this.interval) {
             spamDetected = true;
           } else if (this.authors[i].time < now - this.interval) {
-            this.messageLog.splice(this.messageLog.findIndex((message) => message.author === this.authors[i].author));
+            this.messageLog.splice(
+              this.messageLog.findIndex((message) => message.authorId === this.authors[i].authorId),
+            );
             this.authors.splice(i);
           }
           if (this.messageLog.length >= 200) {
@@ -79,3 +82,65 @@ class AntiSpam {
 }
 
 export default new AntiSpam();
+
+type LfsLog = {
+  reaction: string;
+  lfsAuthorId: string;
+  reactionAuthorId: string;
+  timestamp?: number;
+};
+
+const MINIMUM_LFS_INTERVAL = 1200000;
+class AntiSpamLfsReactionClass {
+  logs: LfsLog[];
+  interval: number;
+
+  constructor() {
+    this.logs = [];
+    this.interval = MINIMUM_LFS_INTERVAL;
+  }
+
+  matchLogs(newLog: LfsLog) {
+    const matches = this.logs.filter(
+      (log) =>
+        newLog.reaction === log.reaction &&
+        newLog.lfsAuthorId === log.lfsAuthorId &&
+        newLog.reactionAuthorId === log.reactionAuthorId,
+    );
+    return matches;
+  }
+
+  parse(log: LfsLog) {
+    const now = Date.now();
+    this.logs.push({ ...log, timestamp: now });
+
+    const logsMatched = this.matchLogs(log);
+    let isSpam = false;
+
+    if (logsMatched.length > 1) {
+      const spammedLog = logsMatched.find((logMatched, index) => {
+        const timestamp = logMatched?.timestamp;
+        if (typeof timestamp !== 'number') return false;
+        const isMatchSpam = timestamp > now - this.interval;
+        if (!isMatchSpam) this.logs.splice(index);
+        return isMatchSpam;
+      });
+      isSpam = Boolean(spammedLog);
+    }
+
+    this.clear();
+    return isSpam;
+  }
+
+  clear() {
+    if (this.logs.length >= 200) {
+      this.logs.shift();
+    }
+  }
+
+  getIntervalMinutes() {
+    return millisToMinutes(this.interval);
+  }
+}
+
+export const AntiSpamLfsReaction = new AntiSpamLfsReactionClass();

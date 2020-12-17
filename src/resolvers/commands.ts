@@ -142,6 +142,7 @@ export const commandsResolver = async (client: Client, message: Message) => {
     const isSpamDetected = await AntiSpam.checkMessageInterval(message); // Check sent messages interval
     if (isSpamDetected) {
       await message.delete();
+      await message.author.send(`<@${message.author.id}>, por favor evita o spam de comandos.`);
       throw new Error(`Spam detected: ${message.content} by ${message.author.id}`);
     }
 

@@ -32,3 +32,5 @@ export const computeChannelUsers = (
   ];
   return authorFirst;
 };
+
+export const millisToMinutes = (millis: number) => Math.floor(millis / 60000);
