@@ -7,6 +7,7 @@ import { parseAuthorIdFromLfsEmbed } from '../utils/embeds';
 import { addStatsRoles } from '../services/roles';
 import { computeChannelUsers, computeUserPartialFromDocument } from './../utils/helpers';
 import User from './../models/user';
+import AntiSpam from './../services/spam';
 
 type CommandResolver = (client: Client, message: Message, argumentsParsed: argv.Arguments) => Promise<void>;
 
@@ -20,6 +21,7 @@ type Resolvers = {
 export const resolvers: Resolvers = {
   lfs: async (client, message) => {
     if (message.channel.id !== process.env.LFS_CHANNEL_ID) return;
+
     await message.delete();
 
     const authorChannel = message.member?.voice.channel;
@@ -131,6 +133,13 @@ export const commandsResolver = async (client: Client, message: Message) => {
   if (!COMMANDS.includes(command)) return null;
 
   try {
+    await AntiSpam.log(message.author.id, message.content);
+    const isSpamDetected = await AntiSpam.checkMessageInterval(message); // Check sent messages interval
+    if (isSpamDetected) {
+      await message.delete();
+      throw new Error(`Spam detected: ${message.content} by ${message.author.id}`);
+      return;
+    }
     const resolver = resolvers[command];
     await resolver(client, message, commandArgv);
   } catch (err) {
