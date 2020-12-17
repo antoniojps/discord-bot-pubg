@@ -1,5 +1,6 @@
 import argv from 'yargs-parser';
 import { Client, Message } from 'discord.js';
+import { EmbedHelp } from '../embeds/Help';
 import { EmbedLookingForSomeone } from '../embeds/LookingForSomeone';
 import { EmbedErrorMessage, EmbedError } from '../embeds/Error';
 import { EmbedSuccessMessage } from '../embeds/Success';
@@ -126,6 +127,10 @@ export const resolvers: Resolvers = {
         `<@${message.author.id}>, **Modo**: Squad-FPP, **Rank** (maior): ${updatedUser.stats.bestRank}, **ADR**: ${updatedUser.stats.avgDamage}, **K/D**: ${updatedUser.stats.kd}, **WR**: ${updatedUser.stats.winRatio}%`,
       );
     }
+  },
+  '/help': async (client, message) => {
+    await message.delete();
+    const embed = await message.author.send(EmbedHelp());
   },
 };
 
