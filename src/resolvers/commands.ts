@@ -3,7 +3,7 @@ import { Client, Message } from 'discord.js';
 import { EmbedLookingForSomeone } from '../embeds/LookingForSomeone';
 import { EmbedErrorMessage, EmbedError } from '../embeds/Error';
 import { EmbedSuccessMessage } from '../embeds/Success';
-import { parseAuthorIdFromLfsEmbed } from '../utils/embeds';
+import { parseAuthorIdFromLfsEmbed, deleteAllLfsAuthorEmbeds } from '../utils/embeds';
 import { addStatsRoles } from '../services/roles';
 import { computeChannelUsers, computeUserPartialFromDocument } from './../utils/helpers';
 import User from './../models/user';
@@ -12,9 +12,6 @@ import AntiSpam from './../services/spam';
 type CommandResolver = (client: Client, message: Message, argumentsParsed: argv.Arguments) => Promise<void>;
 
 type Resolvers = {
-  lfs: CommandResolver;
-  '-': CommandResolver;
-  '/link': CommandResolver;
   [key: string]: CommandResolver;
 };
 
@@ -23,18 +20,26 @@ export const resolvers: Resolvers = {
     if (message.channel.id !== process.env.LFS_CHANNEL_ID) return;
 
     await message.delete();
+    const authorVoiceChannel = message.member?.voice.channel;
 
-    const authorChannel = message.member?.voice.channel;
+    // delete previous lfs embeds
+    const textChannel = await client.channels.fetch(process.env.LFS_CHANNEL_ID);
+    if (textChannel.isText()) {
+      const messages = await textChannel.messages.fetch();
+      await deleteAllLfsAuthorEmbeds(message.author.id, messages);
+    }
 
-    if (authorChannel && authorChannel.members.size > 0) {
-      const authorChannelUsersDiscordIds = authorChannel?.members.map((member) => member.user.id);
-      const channelUsersDocuments = await User.find({ discordId: { $in: authorChannelUsersDiscordIds } });
+    if (authorVoiceChannel && authorVoiceChannel.members.size > 0) {
+      const authorVoiceChannelUsersDiscordIds = authorVoiceChannel?.members.map((member) => member.user.id);
+      const channelUsersDocuments = await User.find({ discordId: { $in: authorVoiceChannelUsersDiscordIds } });
       const channelUsersWithStats = computeChannelUsers(
-        authorChannel?.members,
+        authorVoiceChannel?.members,
         channelUsersDocuments,
         message.author.id,
       );
-      const embed = await message.channel.send(EmbedLookingForSomeone(message, channelUsersWithStats, authorChannel));
+      const embed = await message.channel.send(
+        EmbedLookingForSomeone(message, channelUsersWithStats, authorVoiceChannel),
+      );
       await embed.react('✉️');
     } else {
       const authorDocument = await User.findOne({ discordId: message.author.id });
