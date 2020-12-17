@@ -79,7 +79,13 @@ export const resolvers: Resolvers = {
         `Ligaste a conta [${pubgNickname}](https://pubg.op.gg/user/${pubgNickname}) à tua conta de Discord!`,
       ),
     );
-    if (stats?.bestRank && stats?.avgDamage && stats?.kd && stats?.winRatio && message?.member) {
+    if (
+      typeof stats?.bestRank === 'string' &&
+      typeof stats?.avgDamage === 'number' &&
+      typeof stats?.kd === 'number' &&
+      typeof stats?.winRatio === 'number' &&
+      message?.member
+    ) {
       await addStatsRoles(message.member, stats);
       await feedbackMessage.edit(
         `<@${message.author.id}>, **Modo**: Squad-FPP, **Rank** (maior): ${stats.bestRank}, **ADR**: ${stats.avgDamage}, **K/D**: ${stats.kd}, **WR**: ${stats.winRatio}%`,
@@ -102,10 +108,10 @@ export const resolvers: Resolvers = {
     );
 
     if (
-      updatedUser?.stats?.bestRank &&
-      updatedUser?.stats?.avgDamage &&
-      updatedUser?.stats?.kd &&
-      updatedUser?.stats?.winRatio &&
+      typeof updatedUser?.stats?.bestRank === 'string' &&
+      typeof updatedUser?.stats?.avgDamage === 'number' &&
+      typeof updatedUser?.stats?.kd === 'number' &&
+      typeof updatedUser?.stats?.winRatio === 'number' &&
       message?.member
     ) {
       await addStatsRoles(message.member, updatedUser.stats);
