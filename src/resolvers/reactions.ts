@@ -13,6 +13,7 @@ type Resolvers = {
 
 export const resolvers: Resolvers = {
   '✉️': async (client, reaction, user) => {
+    // todo if user is already in team it shouldnt proceed
     // make sure its in the LFS channel
     if (reaction.message.channel.id !== process.env.LFS_CHANNEL_ID) throw new Error('Forbidden: Invalid lfs channel');
 
@@ -72,6 +73,7 @@ export const resolvers: Resolvers = {
     }
   },
   '👍': async (client, reaction, user) => {
+    // todo if user has already reacted to this it should ignore
     // make sure its in the LFS channel
     if (reaction.message.channel.id !== process.env.LFS_CHANNEL_ID) throw new Error('Forbidden: Invalid lfs channel');
 
@@ -79,20 +81,22 @@ export const resolvers: Resolvers = {
     const embedType = embed.footer?.text;
     const isSoloLfs = !embed.author?.name;
     const lfsAuthorId = embed.description ? parseUserIdFromMention(embed.description) : null;
+    const isNotAuthor = lfsAuthorId !== user.id;
 
-    if (embedType === 'lfs' && isSoloLfs && process.env.DISCORD_SERVER_ID && lfsAuthorId) {
+    if (embedType === 'lfs' && isNotAuthor && isSoloLfs && process.env.DISCORD_SERVER_ID && lfsAuthorId) {
       const guild = await client.guilds.fetch(process.env.DISCORD_SERVER_ID);
       const reactionMember = await guild.members.fetch(user.id);
       const lfsAuthor = client.users.cache.find((user) => user.id === lfsAuthorId);
 
       const reactionAuthorChannel = reactionMember?.voice.channel;
 
-      if (!reactionAuthorChannel)
+      if (!reactionAuthorChannel) {
         await user.send(`<@${user.id}>, tens de estar num canal de voz para convidar ✉️ jogadores.`);
-
-      const channelName = reactionAuthorChannel?.name;
-      const channelInvite = await reactionAuthorChannel?.createInvite();
-      await lfsAuthor?.send(EmbedPmNoticeWelcome(user.id, channelName, channelInvite?.url));
+      } else {
+        const channelName = reactionAuthorChannel?.name;
+        const channelInvite = await reactionAuthorChannel?.createInvite();
+        await lfsAuthor?.send(EmbedPmNoticeWelcome(user.id, channelName, channelInvite?.url));
+      }
     }
   },
 };
