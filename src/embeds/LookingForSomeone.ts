@@ -9,7 +9,7 @@ export const EmbedLookingForSomeone = (message: Message, users?: UserPartial[], 
 
   const missingPlayers = users && users.length ? ` +${4 - users.length} ` : ' ';
   const title = channel ? `Procura${missingPlayers}jogadores - #${channel.name}` : `Procura${missingPlayers}jogadores`;
-  const conclusion = channel ? `Para te juntares envia PM <@${message.author.id}> :incoming_envelope:` : '';
+  const conclusion = channel ? `Para te juntares reaje com ✉️ ou envia PM <@${message.author.id}>` : '';
 
   const Embed = new MessageEmbed()
     .setColor('#0099ff')

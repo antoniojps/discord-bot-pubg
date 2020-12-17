@@ -15,3 +15,11 @@ export const EmbedPmRequestAccept = (authorId: string) => {
     .setFooter('✅')
     .setTimestamp();
 };
+
+export const EmbedPmRequestDecline = (authorId: string) => {
+  return new MessageEmbed()
+    .setColor('#FF1700')
+    .setDescription(`<@${authorId}> rejeitado.`)
+    .setFooter('❌')
+    .setTimestamp();
+};
