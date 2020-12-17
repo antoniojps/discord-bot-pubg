@@ -22,10 +22,6 @@ export const EmbedHelp = () => {
         value: '`lfs` para iniciar uma procura por jogadores.\n`-` para cancelar a procura',
       },
       {
-        name: 'Nova Season',
-        value: '`/restart` no início de uma nova season dá restart às roles no discord (não remove stats)',
-      },
-      {
         name: 'Outros comandos',
         value:
           '`/update` para dar update aos stats e roles de um utilizador previamente linkado.\n`/help` para receber uma PM com um guia geral dos comandos do bot',
