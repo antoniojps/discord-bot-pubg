@@ -130,7 +130,7 @@ export const resolvers: Resolvers = {
   },
   '/help': async (client, message) => {
     await message.delete();
-    const embed = await message.author.send(EmbedHelp());
+    await message.author.send(EmbedHelp());
   },
 };
 
