@@ -1,6 +1,6 @@
 import { Client, MessageReaction, User, PartialUser } from 'discord.js';
 import { EmbedPmRequest } from '../embeds/PmRequest';
-import { EmbedPmNotice, EmbedPmNoticeAccept, EmbedPmNoticeDecline } from '../embeds/PmNotice';
+import { EmbedPmNotice, EmbedPmNoticeAccept, EmbedPmNoticeWelcome, EmbedPmNoticeDecline } from '../embeds/PmNotice';
 import { EmbedPmRequestAccept, EmbedPmRequestDecline } from '../embeds/PmRequest';
 import { parseAuthorIdFromLfsEmbed } from '../utils/embeds';
 import { parseUserIdFromMention } from '../utils/helpers';
@@ -69,6 +69,30 @@ export const resolvers: Resolvers = {
         const lfsReactionAuthor = client.users.cache.find((user) => user.id === lfsReactionAuthorId);
         lfsReactionAuthor?.send(EmbedPmNoticeDecline(user.id));
       }
+    }
+  },
+  '👍': async (client, reaction, user) => {
+    // make sure its in the LFS channel
+    if (reaction.message.channel.id !== process.env.LFS_CHANNEL_ID) throw new Error('Forbidden: Invalid lfs channel');
+
+    const [embed] = reaction.message.embeds;
+    const embedType = embed.footer?.text;
+    const isSoloLfs = !embed.author?.name;
+    const lfsAuthorId = embed.description ? parseUserIdFromMention(embed.description) : null;
+
+    if (embedType === 'lfs' && isSoloLfs && process.env.DISCORD_SERVER_ID && lfsAuthorId) {
+      const guild = await client.guilds.fetch(process.env.DISCORD_SERVER_ID);
+      const reactionMember = await guild.members.fetch(user.id);
+      const lfsAuthor = client.users.cache.find((user) => user.id === lfsAuthorId);
+
+      const reactionAuthorChannel = reactionMember?.voice.channel;
+
+      if (!reactionAuthorChannel)
+        await user.send(`<@${user.id}>, tens de estar num canal de voz para convidar ✉️ jogadores.`);
+
+      const channelName = reactionAuthorChannel?.name;
+      const channelInvite = await reactionAuthorChannel?.createInvite();
+      await lfsAuthor?.send(EmbedPmNoticeWelcome(user.id, channelName, channelInvite?.url));
     }
   },
 };

@@ -16,6 +16,13 @@ export const EmbedPmNoticeAccept = (authorId: string, channelName?: string, chan
   `);
 };
 
+export const EmbedPmNoticeWelcome = (authorId: string, channelName?: string, channelInvite?: string) => {
+  return new MessageEmbed().setColor('#00FF6D').setDescription(`
+    <@${authorId}> convidou-te para jogar. Junta-te ao canal **${channelName}**
+    ${channelInvite}
+  `);
+};
+
 export const EmbedPmNoticeDecline = (authorId: string) => {
   return new MessageEmbed().setColor('#FF1700').setDescription(`
     Neste momento <@${authorId}> não está disponível para jogar.
