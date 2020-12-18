@@ -2,6 +2,7 @@ import { Client } from 'discord.js';
 import dotenv from 'dotenv';
 import { commandsResolver } from './resolvers/commands';
 import { reactionsResolver } from './resolvers/reactions';
+import { voiceResolver } from './resolvers/voice';
 import mongo from './services/database';
 import setupRoles from './services/roles';
 
@@ -38,4 +39,8 @@ client.on('messageReactionAdd', async (reaction, user) => {
   if (messageIsEmbed) {
     reactionsResolver(client, reaction, user);
   }
+});
+
+client.on('voiceStateUpdate', async (oldState, newState) => {
+  await voiceResolver(client, oldState, newState);
 });

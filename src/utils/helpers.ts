@@ -11,6 +11,11 @@ export const parseUserIdFromMention = (message: string): string | null => {
   return match && match[1] ? match[1] : null;
 };
 
+export const parseUserIdFromQueryString = (message: string): string | null => {
+  const match = message.match(/\?discordId=(.*)\)/);
+  return match && match[1] ? match[1] : null;
+};
+
 export const computeUserPartialFromDocument = (discordId: string, document?: UserDocument | null) => ({
   discordId,
   pubgNickname: document?.pubgNickname || '',

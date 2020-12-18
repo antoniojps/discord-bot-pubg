@@ -1,5 +1,6 @@
+import qs from 'query-string';
 import { MessageEmbed, Collection, Snowflake, Message } from 'discord.js';
-import { parseUserIdFromMention } from './helpers';
+import { parseUserIdFromMention, parseUserIdFromQueryString } from './helpers';
 
 export const parseAuthorIdFromLfsEmbed = (embed: MessageEmbed) => {
   if (embed && embed.author && embed.author.iconURL) {
@@ -13,6 +14,40 @@ export const parseAuthorIdFromLfsEmbed = (embed: MessageEmbed) => {
   }
 
   return null;
+};
+
+export const parseChannelIdFromLfsEmbed = (embed: MessageEmbed) => {
+  if (embed && embed.author && embed.author.iconURL) {
+    const authorUrl = new URL(embed.author.iconURL);
+    const query = qs.parse(authorUrl.search);
+    if (typeof query?.channelId === 'string') return query?.channelId;
+  }
+
+  return null;
+};
+
+export const parseUsersFromLfsEmbed = (embed: MessageEmbed) => {
+  const lines = embed.description
+    ?.split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .slice(0, -1);
+  const users = lines?.map((line) => {
+    return parseUserIdFromQueryString(line) || parseUserIdFromMention(line);
+  });
+
+  return users;
+};
+
+export type LfsEmbedObject = {
+  author: string | null;
+  channelId: string | null;
+  users: (string | null)[] | undefined;
+};
+
+export const parseLfsEmbed = (embed: MessageEmbed): LfsEmbedObject => {
+  const channelId = parseChannelIdFromLfsEmbed(embed);
+  return { author: parseAuthorIdFromLfsEmbed(embed), channelId, users: parseUsersFromLfsEmbed(embed) };
 };
 
 export const deleteAllLfsAuthorEmbeds = async (authorId: string, messages: Collection<Snowflake, Message>) => {
