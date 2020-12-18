@@ -68,23 +68,31 @@ export const resolvers: Resolvers = {
     if (message.channel.id !== process.env.ROLES_CHANNEL_ID) return;
 
     const pubgNickname = argumentsParsed._[1] || '';
+    let discordID = message.author.id;
 
     if (pubgNickname === '') {
       throw new EmbedError(
-        `<@${message.author.id}> para associar a tua conta é necessário dizer o nome no pubg, exemplo:  \`/link NICK_DO_PUBG\``,
+        `<@${discordID}> para associar a tua conta é necessário dizer o nome no pubg, exemplo:  \`/link NICK_DO_PUBG\``,
       );
     }
+
+    if(argumentsParsed._[2] !== "undefined" && message.channel.id === process.env.ADMIN_CHANNEL_ID) {
+      discordID = argumentsParsed._[2];
+    }
+
+    const guild = await client.guilds.fetch(process.env.DISCORD_SERVER_ID!);
+    const member = await guild.members.fetch(discordID);
 
     const feedbackMessage = await message.channel.send('A associar contas...');
 
     const { stats } = await User.linkPubgAccount({
-      discordId: message.author.id,
+      discordId: discordID,
       pubgNickname,
     });
 
     await feedbackMessage.edit(
       EmbedSuccessMessage(
-        `Ligaste a conta [${pubgNickname}](https://pubg.op.gg/user/${pubgNickname}) à tua conta de Discord!`,
+        `Ligaste a conta [${pubgNickname}](https://pubg.op.gg/user/${pubgNickname}) à conta Discord <@${discordID}>`,
       ),
     );
     if (
@@ -94,7 +102,7 @@ export const resolvers: Resolvers = {
       typeof stats?.winRatio === 'number' &&
       message?.member
     ) {
-      await addStatsRoles(message.member, stats);
+      await addStatsRoles(member, stats);
       await feedbackMessage.edit(
         `<@${message.author.id}>, **Modo**: Squad-FPP, **Rank** (maior): ${stats.bestRank}, **ADR**: ${stats.avgDamage}, **K/D**: ${stats.kd}, **WR**: ${stats.winRatio}%`,
       );

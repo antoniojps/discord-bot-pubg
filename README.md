@@ -31,14 +31,15 @@ Add the bot the server, to do so visit the link: `https://discord.com/oauth2/aut
 
 ### Available commands
 
-| Command               | Channel            | Description                                                                           |
-| :-------------------- | :----------------- | :------------------------------------------------------------------------------------ |
-| `lfs`                 | `LFS_CHANNEL_ID`   | Creates a LFS embed                                                                   |
-| `-`                   | `LFS_CHANNEL_ID`   | Deletes the last LFS embed of the author                                              |
-| `/link PUBG_NICKNAME` | `ROLES_CHANNEL_ID` | Assigns a pubg nickname to the author and roles according to stats                    |
-| `/update`             | `ROLES_CHANNEL_ID` | Updates user pubg stats for users already linked                                      |
-| `/restart`            | `ADMIN_CHANNEL_ID` | Removes all rank roles (maintains stats), to be used in the beginning of a new season |
-| `/help`               | `ANY CHANNEL`      | Sends a PM to the User with a General Guide to the bot commands                       |
+| Command                          | Channel            | Description                                                                           |
+| :------------------------------- | :----------------- | :------------------------------------------------------------------------------------ |
+| `lfs`                            | `LFS_CHANNEL_ID`   | Creates a LFS embed                                                                   |
+| `-`                              | `LFS_CHANNEL_ID`   | Deletes the last LFS embed of the author                                              |
+| `/link PUBG_NICKNAME`            | `ROLES_CHANNEL_ID` | Assigns a pubg nickname to the author and roles according to stats                    |
+| `/update`                        | `ROLES_CHANNEL_ID` | Updates user pubg stats for users already linked                                      |
+| `/restart`                       | `ADMIN_CHANNEL_ID` | Removes all rank roles (maintains stats), to be used in the beginning of a new season |
+| `/link PUBG_NICKNAME DISCORD_ID` | `ADMIN_CHANNEL_ID` | Assigns a pubg nickname to the user of the discord id and roles according to stats    |
+| `/help`                          | `ANY CHANNEL`      | Sends a PM to the User with a General Guide to the bot commands                       |
 
 ### Usage
 
@@ -49,6 +50,10 @@ The first thing a user must do is link their discord account to a pubg account b
 `/link PUBG_NAME`
 
 This command will fetch the users stats directly from the PUBG API there's a minimum of 20 games required in order to provide the roles.
+
+`/link PUBG_NAME DISCORD_ID`
+
+Admin command, same as previous but assigns the stats of the PUBG_NAME to the user of the DISCORD_ID. Used to avoid false linking.
 
 **Roles**
 | Role(s) | Description |
