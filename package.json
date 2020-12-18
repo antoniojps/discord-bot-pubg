@@ -7,7 +7,10 @@
   "license": "MIT",
   "scripts": {
     "commit": "git-cz",
-    "start": "nodemon dist/bot.js",
+    "start:dev": "nodemon dist/bot.js",
+    "start": "node dist/bot.js",
+    "build": "tsc",
+    "postintall": "npm run build",
     "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix"
   },
   "husky": {
