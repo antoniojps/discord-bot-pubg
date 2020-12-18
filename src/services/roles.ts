@@ -81,7 +81,7 @@ const computeRoleNameFromStats = (role: RoleGeneric, stat: number, type: 'KD' | 
   return `${statRole} ${type}`;
 };
 
-const removeRoles = async (member: GuildMember) => {
+export const removeRoles = async (member: GuildMember) => {
   const rolesToBeRemoved = member.roles.cache.filter((role) => {
     const statsRolesFound = ROLES.filter((r) => r.name === role.name);
     const statsRolesNamefound = statsRolesFound.map((roleFound) => roleFound.name);

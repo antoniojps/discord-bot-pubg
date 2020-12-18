@@ -1,11 +1,11 @@
 import argv from 'yargs-parser';
-import { Client, Message } from 'discord.js';
+import { Client, GuildMember, Message } from 'discord.js';
 import { EmbedHelp } from '../embeds/Help';
 import { EmbedLookingForSomeone } from '../embeds/LookingForSomeone';
 import { EmbedErrorMessage, EmbedError } from '../embeds/Error';
 import { EmbedSuccessMessage } from '../embeds/Success';
 import { parseAuthorIdFromLfsEmbed, deleteAllLfsAuthorEmbeds } from '../utils/embeds';
-import { addStatsRoles } from '../services/roles';
+import { addStatsRoles, removeRoles } from '../services/roles';
 import { computeChannelUsers, computeUserPartialFromDocument } from './../utils/helpers';
 import User from './../models/user';
 import AntiSpam from './../services/spam';
@@ -65,36 +65,46 @@ export const resolvers: Resolvers = {
     }
   },
   '/link': async (client, message, argumentsParsed) => {
-    if (message.channel.id !== process.env.ROLES_CHANNEL_ID) return;
+    const isLfsChannel = message.channel.id === process.env.ROLES_CHANNEL_ID;
+    const isAdminChannel = message.channel.id === process.env.ADMIN_CHANNEL_ID;
+    if (!isLfsChannel && !isAdminChannel) return;
 
     const pubgNickname = argumentsParsed._[1] || '';
-    let discordID = message.author.id;
+    const discordId = argumentsParsed._[2] || '';
+    const isAdminCommand = isAdminChannel && discordId;
+    const command = isAdminChannel ? `\`/link NICK_DO_PUBG DISCORD_ID\`` : `\`/link NICK_DO_PUBG\``;
 
     if (pubgNickname === '') {
       throw new EmbedError(
-        `<@${discordID}> para associar a tua conta é necessário dizer o nome no pubg, exemplo:  \`/link NICK_DO_PUBG\``,
+        `<@${message.author.id}> para associar a conta é necessário dizer o nome no pubg, exemplo:  ${command}`,
       );
     }
 
-    if(argumentsParsed._[2] !== "undefined" && message.channel.id === process.env.ADMIN_CHANNEL_ID) {
-      discordID = argumentsParsed._[2];
+    if (isAdminChannel && discordId === '') {
+      throw new EmbedError(
+        `<@${message.author.id}> para associar a conta de pubg **${pubgNickname}** no canal de admin é necessário dizer a quem queremos associar, exemplo:  ${command}`,
+      );
     }
-
-    const guild = await client.guilds.fetch(process.env.DISCORD_SERVER_ID!);
-    const member = await guild.members.fetch(discordID);
 
     const feedbackMessage = await message.channel.send('A associar contas...');
 
-    const { stats } = await User.linkPubgAccount({
-      discordId: discordID,
+    const {
+      newUser: { stats },
+      oldUser,
+    } = await User.linkPubgAccount({
+      discordId: isAdminChannel ? discordId : message.author.id,
       pubgNickname,
+      force: isAdminChannel,
     });
 
     await feedbackMessage.edit(
       EmbedSuccessMessage(
-        `Ligaste a conta [${pubgNickname}](https://pubg.op.gg/user/${pubgNickname}) à conta Discord <@${discordID}>`,
+        isAdminCommand
+          ? `Ligaste a conta [${pubgNickname}](https://pubg.op.gg/user/${pubgNickname}) à conta de Discord <@${discordId}>`
+          : `Ligaste a conta [${pubgNickname}](https://pubg.op.gg/user/${pubgNickname}) à tua conta de Discord!`,
       ),
     );
+
     if (
       typeof stats?.bestRank === 'string' &&
       typeof stats?.avgDamage === 'number' &&
@@ -102,11 +112,53 @@ export const resolvers: Resolvers = {
       typeof stats?.winRatio === 'number' &&
       message?.member
     ) {
+      // remove roles from user that had the nickname before forced change
+      if (isAdminCommand && oldUser?.discordId) {
+        const oldMember = await message.guild?.members.fetch(oldUser.discordId);
+        if (oldMember) {
+          await removeRoles(oldMember);
+          await message.channel.send(`Roles de <@${oldUser.discordId}> removidas.`);
+        }
+      }
+
+      const linkedDiscordId = isAdminCommand ? discordId : message.author.id;
+      let member: GuildMember | undefined = message.member;
+      if (isAdminCommand) {
+        member = await message.guild?.members.fetch(discordId);
+      }
+      if (!member) throw new EmbedError('Utilizador não encontrado no servidor');
       await addStatsRoles(member, stats);
-      await feedbackMessage.edit(
-        `<@${message.author.id}>, **Modo**: Squad-FPP, **Rank** (maior): ${stats.bestRank}, **ADR**: ${stats.avgDamage}, **K/D**: ${stats.kd}, **WR**: ${stats.winRatio}%`,
+      const messageStats = `<@${linkedDiscordId}>, **Modo**: Squad-FPP, **Rank** (maior): ${stats.bestRank}, **ADR**: ${stats.avgDamage}, **K/D**: ${stats.kd}, **WR**: ${stats.winRatio}%.`;
+      await feedbackMessage.edit(messageStats);
+    }
+  },
+  '/unlink': async (client, message, argumentsParsed) => {
+    const isAdminChannel = message.channel.id === process.env.ADMIN_CHANNEL_ID;
+    if (!isAdminChannel) return;
+
+    const pubgNickname = argumentsParsed._[1] || '';
+    const command = `\`/unlink PUBG_NICKNAME\``;
+
+    if (pubgNickname === '') {
+      throw new EmbedError(
+        `<@${message.author.id}> para desassociar a conta é necessário dizer o nome no pubg, exemplo:  ${command}`,
       );
     }
+
+    const feedbackMessage = await message.channel.send('A desassociar conta...');
+    const { discordId } = await User.deleteByPubgAccount(pubgNickname);
+
+    const member = await message.guild?.members.fetch(discordId);
+    if (member) {
+      await removeRoles(member);
+      await message.channel.send(`Roles de <@${discordId}> removidas.`);
+    }
+
+    await feedbackMessage.edit(
+      EmbedSuccessMessage(
+        `Desassociaste a conta [${pubgNickname}](https://pubg.op.gg/user/${pubgNickname}) à conta de Discord <@${discordId}>`,
+      ),
+    );
   },
   '/update': async (client, message) => {
     if (message.channel.id !== process.env.ROLES_CHANNEL_ID) return;
@@ -145,6 +197,7 @@ export const resolvers: Resolvers = {
 export const COMMANDS = Object.keys(resolvers);
 
 export const commandsResolver = async (client: Client, message: Message) => {
+  const isAdminChannel = message.channel.id === process.env.ADMIN_CHANNEL_ID;
   const commandArgv = argv(message.content);
 
   const [command] = commandArgv._;
@@ -162,7 +215,7 @@ export const commandsResolver = async (client: Client, message: Message) => {
     const resolver = resolvers[command];
     await resolver(client, message, commandArgv);
   } catch (err) {
-    if (err.name === 'EmbedError') {
+    if (err.name === 'EmbedError' || isAdminChannel) {
       await message.channel.send(EmbedErrorMessage(err.message));
     } else console.error(`Error running command resolver: "${command}"`, err.message);
   }
