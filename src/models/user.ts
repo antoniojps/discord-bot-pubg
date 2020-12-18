@@ -92,9 +92,7 @@ UserSchema.statics = {
       if (force && userWithNick.discordId !== discordId) {
         await userWithNick.delete();
       } else {
-        throw new EmbedError(
-          `<@${userWithNick.discordId}> já està ligado a esta conta de pubg **${pubgNickname}**. Se pretendes atualizar usa \`/update\``,
-        );
+        throw new EmbedError(`<@${userWithNick.discordId}> já está ligado a esta conta de pubg **${pubgNickname}**.`);
       }
     }
 

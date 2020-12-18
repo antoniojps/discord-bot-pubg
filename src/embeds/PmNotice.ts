@@ -25,6 +25,6 @@ export const EmbedPmNoticeWelcome = (authorId: string, channelName?: string, cha
 
 export const EmbedPmNoticeDecline = (authorId: string) => {
   return new MessageEmbed().setColor('#FF1700').setDescription(`
-    Neste momento <@${authorId}> não está disponível para jogar.
+    Neste momento <@${authorId}> não está interessado em jogar.
   `);
 };
