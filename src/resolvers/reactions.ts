@@ -89,7 +89,6 @@ export const resolvers: Resolvers = {
     }
   },
   '👍': async (client, reaction, user) => {
-    // todo if user has already reacted to this it should ignore
     // make sure its in the LFS channel
     if (reaction.message.channel.id !== process.env.LFS_CHANNEL_ID) throw new Error('Forbidden: Invalid lfs channel');
 
