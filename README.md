@@ -31,15 +31,15 @@ Add the bot the server, to do so visit the link: `https://discord.com/oauth2/aut
 
 ### Available commands
 
-| Command                          | Channel            | Description                                                                           |
-| :------------------------------- | :----------------- | :------------------------------------------------------------------------------------ |
-| `lfs`                            | `LFS_CHANNEL_ID`   | Creates a LFS embed                                                                   |
-| `-`                              | `LFS_CHANNEL_ID`   | Deletes the last LFS embed of the author                                              |
-| `/link PUBG_NICKNAME`            | `ROLES_CHANNEL_ID` | Assigns a pubg nickname to the author and roles according to stats                    |
-| `/update`                        | `ROLES_CHANNEL_ID` | Updates user pubg stats for users already linked                                      |
-| `/restart`                       | `ADMIN_CHANNEL_ID` | Removes all rank roles (maintains stats), to be used in the beginning of a new season |
-| `/link PUBG_NICKNAME DISCORD_ID` | `ADMIN_CHANNEL_ID` | Assigns a pubg nickname to the user of the discord id and roles according to stats    |
-| `/help`                          | `ANY CHANNEL`      | Sends a PM to the User with a General Guide to the bot commands                       |
+| Command                          | Channel            | Description                                                                                                                                                         |
+|----------------------------------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `lfs`                            | `LFS_CHANNEL_ID`   | Creates a LFS embed                                                                                                                                                 |
+| `-`                              | `LFS_CHANNEL_ID`   | Deletes the last LFS embed of the author                                                                                                                            |
+| `/link PUBG_NICKNAME`            | `ROLES_CHANNEL_ID` | Assigns a pubg nickname to the author and roles according to stats                                                                                                  |
+| `/update`                        | `ROLES_CHANNEL_ID` | Updates user pubg stats for users already linked                                                                                                                    |
+| `/link PUBG_NICKNAME DISCORD_ID` | `ADMIN_CHANNEL_ID` | Assigns a pubg nickname to the user of the discord id and roles according to stats, if someone is linked to that pubg account he will be unlinked and roles removed |
+| `/unlink PUBG_NICKNAME`          | `ADMIN_CHANNEL_ID` | If someone is linked to that pubg account he will be unlinked and roles removed                                                                                     |
+| `/help`                          | `LFS_CHANNEL_ID`, `ROLES_CHANNELL_ID`, `ADMIN_CHANNEL_ID`      | Sends a PM to the User with a General Guide to the bot commands, or sends message with help commands.                       |
 
 ### Usage
 
@@ -59,8 +59,8 @@ Admin command, same as previous but assigns the stats of the PUBG_NAME to the us
 | Role(s) | Description |
 |:-----------------|:-------------|
 | `Bronze`, `Silver`, `Gold`, `Platinum`, `Diamond`, `Master` | Role according to rank. |
-| `KD -0.5`, `KD +0.5`, `KD +1`, `KD +1.5`, `KD +2`, `KD +2.5`, `KD +3`, `KD +3.5`, `KD +4`, `KD +4.5`, `KD +5` | Role according to KD. |
-| `-100 ADR`, `+100 ADR`, `+150 ADR`, `+200 ADR`, `+250 ADR`, `+300 ADR`, `+350 ADR`, `+400 ADR`, `+450 ADR`, `+500 ADR` | Role according to ADR. |
+| `KD 0.5`, `KD 1`, `KD 1.5`, `KD 2`, `KD 2.5`, `KD 3`, `KD 3.5`, `KD 4`, `KD 4.5`, `KD 5`, `KD +6` | Role according to KD. |
+| `100 ADR`, `150 ADR`, `200 ADR`, `250 ADR`, `300 ADR`, `350 ADR`, `400 ADR`, `450 ADR`, `500 ADR`, `+550 ADR` | Role according to ADR. |
 
 ### 2. Looking for someone
 
