@@ -29,7 +29,6 @@
     "dotenv": "^8.2.0",
     "lodash": "^4.17.20",
     "mongoose": "^5.11.7",
-    "pre-commit": "^1.2.2",
     "yargs-parser": "^20.2.4"
   },
   "devDependencies": {
