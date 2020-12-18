@@ -76,14 +76,12 @@ export const resolvers: Resolvers = {
       );
     }
 
-    if(argumentsParsed._[2]) {
-      if (discordID === '') {
-        throw new EmbedError(
-          `<@${discordID}> para associar uma conta é necessário especificar o discordID, exemplo:  \`/link NICK_DO_PUBG DISCORD_ID\``,
-        );
-      }
-      else discordID = argumentsParsed._[2];
+    if(argumentsParsed._[2] !== "undefined" && message.channel.id === process.env.ADMIN_CHANNEL_ID) {
+      discordID = argumentsParsed._[2];
     }
+
+    const guild = await client.guilds.fetch(process.env.DISCORD_SERVER_ID!);
+    const member = await guild.members.fetch(discordID);
 
     const feedbackMessage = await message.channel.send('A associar contas...');
 
@@ -94,7 +92,7 @@ export const resolvers: Resolvers = {
 
     await feedbackMessage.edit(
       EmbedSuccessMessage(
-        `Ligaste a conta [${pubgNickname}](https://pubg.op.gg/user/${pubgNickname}) à tua conta de Discord!`,
+        `Ligaste a conta [${pubgNickname}](https://pubg.op.gg/user/${pubgNickname}) à conta Discord <@${discordID}>`,
       ),
     );
     if (
@@ -104,7 +102,7 @@ export const resolvers: Resolvers = {
       typeof stats?.winRatio === 'number' &&
       message?.member
     ) {
-      await addStatsRoles(message.member, stats);
+      await addStatsRoles(member, stats);
       await feedbackMessage.edit(
         `<@${message.author.id}>, **Modo**: Squad-FPP, **Rank** (maior): ${stats.bestRank}, **ADR**: ${stats.avgDamage}, **K/D**: ${stats.kd}, **WR**: ${stats.winRatio}%`,
       );
@@ -140,7 +138,7 @@ export const resolvers: Resolvers = {
   },
   '/help': async (client, message) => {
     await message.delete();
-    const embed = await message.author.send(EmbedHelp());
+    await message.author.send(EmbedHelp());
   },
 };
 
