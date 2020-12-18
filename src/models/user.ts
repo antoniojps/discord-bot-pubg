@@ -53,11 +53,18 @@ export interface UserDocument extends UserPartial, Document {
 type LinkProps = {
   discordId: string;
   pubgNickname: string;
+  force?: boolean;
 };
 
 interface UserModel extends Model<UserDocument> {
-  linkPubgAccount: (props: LinkProps) => Promise<UserDocument>;
+  linkPubgAccount: (
+    props: LinkProps,
+  ) => Promise<{
+    newUser: UserDocument;
+    oldUser?: UserDocument;
+  }>;
   updatePubgStats: (props: { discordId: string }) => Promise<UserDocument>;
+  deleteByPubgAccount: (pubgNickname: string) => Promise<UserDocument>;
 }
 
 UserSchema.set('timestamps', true);
@@ -67,13 +74,28 @@ UserSchema.methods = {};
 
 // model
 UserSchema.statics = {
-  async linkPubgAccount({ discordId, pubgNickname }: LinkProps) {
+  async deleteByPubgAccount(pubgNickname: string) {
     // find in DB
     const userWithNick: UserDocument = await this.findOne({ pubgNickname });
     if (userWithNick) {
-      throw new EmbedError(
-        `<@${userWithNick.discordId}> já està ligado a esta conta de pubg **${pubgNickname}**. Se pretendes atualizar usa \`/update\``,
-      );
+      await userWithNick.delete();
+    } else {
+      throw new EmbedError(`**${pubgNickname}** não está ligada a nenhuma conta deste discord.`);
+    }
+
+    return userWithNick;
+  },
+  async linkPubgAccount({ discordId, pubgNickname, force }: LinkProps) {
+    // find in DB
+    const userWithNick: UserDocument = await this.findOne({ pubgNickname });
+    if (userWithNick) {
+      if (force && userWithNick.discordId !== discordId) {
+        await userWithNick.delete();
+      } else {
+        throw new EmbedError(
+          `<@${userWithNick.discordId}> já està ligado a esta conta de pubg **${pubgNickname}**. Se pretendes atualizar usa \`/update\``,
+        );
+      }
     }
 
     // get player stats from pubg api
@@ -86,7 +108,7 @@ UserSchema.statics = {
         upsert: true,
       },
     );
-    return newPlayer;
+    return { newUser: newPlayer, oldUser: userWithNick };
   },
   async updatePubgStats({ discordId }: LinkProps) {
     // find in DB
