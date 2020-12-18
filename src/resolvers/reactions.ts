@@ -99,15 +99,21 @@ export const resolvers: Resolvers = {
     const isNotAuthor = lfsAuthorId !== user.id;
 
     if (embedType === 'lfs' && isNotAuthor && isSoloLfs && process.env.DISCORD_SERVER_ID && lfsAuthorId) {
+      const guild = await client.guilds.fetch(process.env.DISCORD_SERVER_ID);
+      const reactionMember = await guild.members.fetch(user.id);
+      const lfsAuthor = client.users.cache.find((user) => user.id === lfsAuthorId);
+      const reactionAuthorChannel = reactionMember?.voice.channel;
+
+      if (!reactionAuthorChannel) {
+        await user.send(`<@${user.id}>, tens de estar num canal de voz para convidar ✉️ jogadores.`);
+        return;
+      }
+
       const isSpam = AntiSpamLfsReaction.parse({
         reaction: reaction.emoji.name,
         lfsAuthorId,
         reactionAuthorId: user.id,
       });
-
-      const guild = await client.guilds.fetch(process.env.DISCORD_SERVER_ID);
-      const reactionMember = await guild.members.fetch(user.id);
-      const lfsAuthor = client.users.cache.find((user) => user.id === lfsAuthorId);
 
       if (isSpam) {
         await reactionMember.send(
@@ -118,15 +124,9 @@ export const resolvers: Resolvers = {
         return;
       }
 
-      const reactionAuthorChannel = reactionMember?.voice.channel;
-
-      if (!reactionAuthorChannel) {
-        await user.send(`<@${user.id}>, tens de estar num canal de voz para convidar ✉️ jogadores.`);
-      } else {
-        const channelName = reactionAuthorChannel?.name;
-        const channelInvite = await reactionAuthorChannel?.createInvite();
-        await lfsAuthor?.send(EmbedPmNoticeWelcome(user.id, channelName, channelInvite?.url));
-      }
+      const channelName = reactionAuthorChannel?.name;
+      const channelInvite = await reactionAuthorChannel?.createInvite();
+      await lfsAuthor?.send(EmbedPmNoticeWelcome(user.id, channelName, channelInvite?.url));
     }
   },
 };
