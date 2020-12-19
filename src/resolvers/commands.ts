@@ -39,13 +39,31 @@ export const resolvers: Resolvers = {
         message.author.id,
       );
       const embed = await message.channel.send(
-        EmbedLookingForSomeone(message, channelUsersWithStats, authorVoiceChannel),
+        EmbedLookingForSomeone({
+          author: {
+            id: message.author.id,
+            avatar: message.author.avatar,
+          },
+          users: channelUsersWithStats,
+          channel: {
+            id: authorVoiceChannel.id,
+            name: authorVoiceChannel.name,
+          },
+        }),
       );
       await embed.react('✉️');
     } else {
       const authorDocument = await User.findOne({ discordId: message.author.id });
       const users = [computeUserPartialFromDocument(message.author.id, authorDocument)];
-      const embed = await message.channel.send(EmbedLookingForSomeone(message, users));
+      const embed = await message.channel.send(
+        EmbedLookingForSomeone({
+          author: {
+            id: message.author.id,
+            avatar: message.author.avatar,
+          },
+          users,
+        }),
+      );
       await embed.react('👍');
     }
   },

@@ -1,5 +1,5 @@
-import { Guild, RoleData, GuildMember, Role } from 'discord.js';
-import { Stats, PubgTier } from './pubg';
+import { Guild, RoleData, GuildMember } from 'discord.js';
+import { PubgTier, StatsPartial } from './pubg';
 import { findClosestNumber } from '../utils/helpers';
 
 type Roles = RoleData[];
@@ -91,11 +91,13 @@ export const removeRoles = async (member: GuildMember) => {
   await Promise.all(removeRolesPromises);
 };
 
-const addRoles = async (member: GuildMember, stats: Stats) => {
-  const kdRoleName = computeRoleNameFromStats(KD, stats.kd, 'KD', 5);
-  const adrRoleName = computeRoleNameFromStats(ADR, stats.avgDamage, 'ADR', 500);
-  const rankRoleName = RANKS[stats.bestRank];
-  const rolesNameToBeAssigned = [kdRoleName, adrRoleName, rankRoleName];
+const addRoles = async (member: GuildMember, stats: StatsPartial) => {
+  if (typeof stats.kd !== 'number' || typeof stats.avgDamage !== 'number' || typeof stats.bestRank !== 'string') return;
+
+  const kdRoleName = stats.kd ? computeRoleNameFromStats(KD, stats.kd, 'KD', 5) : null;
+  const adrRoleName = stats.avgDamage ? computeRoleNameFromStats(ADR, stats.avgDamage, 'ADR', 500) : null;
+  const rankRoleName = stats.bestRank ? RANKS[stats.bestRank] : null;
+  const rolesNameToBeAssigned = [kdRoleName, adrRoleName, rankRoleName].filter((role) => role !== null);
   const roles = await member.guild.roles.fetch();
 
   // add new stats roles
@@ -107,7 +109,7 @@ const addRoles = async (member: GuildMember, stats: Stats) => {
   await Promise.all(addRolesPromises);
 };
 
-export const addStatsRoles = async (member: GuildMember, stats: Stats) => {
+export const addStatsRoles = async (member: GuildMember, stats: StatsPartial) => {
   // remove previous roles
   await removeRoles(member);
   await addRoles(member, stats);

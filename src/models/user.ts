@@ -1,6 +1,6 @@
 import mongoose, { Model, Document } from 'mongoose';
 import { EmbedError } from './../embeds/Error';
-import { getPlayerStats, Stats } from './../services/pubg';
+import { getPlayerStats, Stats, StatsPartial } from './../services/pubg';
 
 const UserSchema = new mongoose.Schema({
   discordId: {
@@ -43,7 +43,7 @@ const UserSchema = new mongoose.Schema({
 export interface UserPartial {
   discordId: string;
   pubgNickname: string;
-  stats?: Stats | null;
+  stats?: Stats | StatsPartial | null;
 }
 export interface UserDocument extends UserPartial, Document {
   createdAt: string;

@@ -93,6 +93,13 @@ export type Stats = {
   roundsPlayed: number;
 };
 
+export type StatsPartial = {
+  kd?: number;
+  avgDamage?: number;
+  bestRank?: PubgTier;
+  winRatio?: number;
+};
+
 const getCurrentSeason = async (): Promise<PubgSeason> => {
   const url = `/seasons`;
   try {
