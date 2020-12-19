@@ -1,29 +1,70 @@
-import qs from 'query-string';
 import { MessageEmbed, Collection, Snowflake, Message } from 'discord.js';
-import { parseUserIdFromMention, parseUserIdFromQueryString } from './helpers';
+import {
+  parseUserIdFromMention,
+  parseUserIdFromQueryString,
+  parsePubgNickFromQueryString,
+  parseAllMentionsIds,
+  parseChannelFromLfsEmbed,
+  parseDiscordAvatarIdFromUrl,
+} from './helpers';
+import { NOT_FOUND_MESSAGE, LfsEmbedProps } from './../embeds/LookingForSomeone';
+import { StatsPartial } from './../services/pubg';
 
 export const parseAuthorIdFromLfsEmbed = (embed: MessageEmbed) => {
   if (embed && embed.author && embed.author.iconURL) {
     const avatarUrl = new URL(embed.author.iconURL);
     const authorId = avatarUrl.pathname.split('/')[2];
-    return authorId;
+    if (authorId) return authorId;
   }
 
   if (embed && embed.description) {
-    return parseUserIdFromMention(embed.description);
+    // last mention will be the author
+    const allMentions = parseAllMentionsIds(embed.description);
+    return allMentions ? allMentions[allMentions.length - 1] : null;
   }
 
   return null;
 };
 
-export const parseChannelIdFromLfsEmbed = (embed: MessageEmbed) => {
-  if (embed && embed.author && embed.author.iconURL) {
-    const authorUrl = new URL(embed.author.iconURL);
-    const query = qs.parse(authorUrl.search);
-    if (typeof query?.channelId === 'string') return query?.channelId;
-  }
+type StatsKeys = keyof typeof statsKeysMap;
 
-  return null;
+const STATS: StatsKeys[] = ['KD', 'ADR', 'WR'];
+const statsKeysMap = {
+  KD: 'kd',
+  ADR: 'avgDamage',
+  WR: 'winRatio',
+};
+
+export const parseUserStatsFromString = (line: string): StatsPartial | undefined => {
+  const userInfo = line.split(',');
+  if (userInfo.length > 0) {
+    const firstSplit = userInfo[0].split(' ');
+    const rank = firstSplit[firstSplit.length - 1];
+    if (rank === NOT_FOUND_MESSAGE) return undefined;
+
+    const statsRaw = userInfo.filter((info) => STATS.find((stat) => info.includes(stat)));
+    const stats: StatsPartial = STATS.reduce((acc, current) => {
+      const statRaw = statsRaw.find((raw) => raw.includes(current));
+      const statValue = parseFloat(statRaw?.split(' ').find(parseFloat) || '');
+      const statKey = statsKeysMap[current];
+
+      if (typeof statValue === 'number') {
+        if (typeof acc === 'object')
+          return {
+            ...acc,
+            [statKey]: statValue,
+          };
+        return {
+          [statKey]: statValue,
+        };
+      }
+      return acc;
+    }, {});
+    return {
+      ...stats,
+      winRatio: stats?.winRatio ? stats?.winRatio / 100 : NaN,
+    };
+  }
 };
 
 export const parseUsersFromLfsEmbed = (embed: MessageEmbed) => {
@@ -33,21 +74,38 @@ export const parseUsersFromLfsEmbed = (embed: MessageEmbed) => {
     .filter(Boolean)
     .slice(0, -1);
   const users = lines?.map((line) => {
-    return parseUserIdFromQueryString(line) || parseUserIdFromMention(line);
+    const pubgNickname = parsePubgNickFromQueryString(line);
+    return {
+      pubgNickname: pubgNickname ?? '',
+      discordId: parseUserIdFromQueryString(line) || parseUserIdFromMention(line),
+      stats: parseUserStatsFromString(line),
+    };
   });
 
   return users;
 };
 
-export type LfsEmbedObject = {
-  author: string | null;
-  channelId: string | null;
-  users: (string | null)[] | undefined;
+export const parseUsersIdsFromLfsEmbed = (embed: MessageEmbed) => {
+  const lines = embed.description
+    ?.split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .slice(0, -1);
+  const users = lines?.map((line) => parseUserIdFromQueryString(line) || parseUserIdFromMention(line));
+
+  return users;
 };
 
-export const parseLfsEmbed = (embed: MessageEmbed): LfsEmbedObject => {
-  const channelId = parseChannelIdFromLfsEmbed(embed);
-  return { author: parseAuthorIdFromLfsEmbed(embed), channelId, users: parseUsersFromLfsEmbed(embed) };
+export const parseLfsEmbed = (embed: MessageEmbed): LfsEmbedProps => {
+  const channel = parseChannelFromLfsEmbed(embed);
+  return {
+    author: {
+      id: parseAuthorIdFromLfsEmbed(embed) ?? '',
+      avatar: embed.author?.iconURL ? parseDiscordAvatarIdFromUrl(embed.author.iconURL) : null,
+    },
+    channel,
+    users: parseUsersFromLfsEmbed(embed),
+  };
 };
 
 export const deleteAllLfsAuthorEmbeds = async (authorId: string, messages: Collection<Snowflake, Message>) => {
