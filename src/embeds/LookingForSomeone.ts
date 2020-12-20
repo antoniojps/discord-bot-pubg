@@ -1,5 +1,5 @@
 import { MessageEmbed } from 'discord.js';
-import { PubgTier, Stats, StatsPartial } from './../services/pubg';
+import { Stats, StatsPartial } from './../services/pubg';
 
 const missingPlayersMedia: { [key: number]: string } = {
   1: 'https://i.imgur.com/TvqWGPH.png',
@@ -7,12 +7,12 @@ const missingPlayersMedia: { [key: number]: string } = {
   3: 'https://i.imgur.com/cx62O1M.png',
 };
 
-type Author = {
+export type Author = {
   id: string;
   avatar: string | null;
 };
 
-type Channel = {
+export type Channel = {
   id: string | null;
   name: string | null;
 };
@@ -64,8 +64,8 @@ export const EmbedLookingForSomeone = ({ author, channel, users }: LfsEmbedProps
     Embed.setThumbnail(missingPlayersMedia[missingPlayers]).setAuthor(
       title,
       author.avatar
-        ? `https://cdn.discordapp.com/avatars/${author.id}/${author.avatar}.png?size=128&channelId=${channel.id}`
-        : `https://i.imgur.com/cqmAKYJ.png?channelId=${channel.id}`,
+        ? `https://cdn.discordapp.com/avatars/${author.id}/${author.avatar}.png?size=128&channelId=${channel.id}&channelName=${channel.name}`
+        : `https://i.imgur.com/cqmAKYJ.png?channelId=${channel.id}&channelName=${channel.name}`,
     );
   }
   return Embed;

@@ -8,7 +8,7 @@ import {
   parseDiscordAvatarIdFromUrl,
 } from './helpers';
 import { NOT_FOUND_MESSAGE, LfsEmbedProps } from './../embeds/LookingForSomeone';
-import { StatsPartial } from './../services/pubg';
+import { StatsPartial, Tier } from './../services/pubg';
 
 export const parseAuthorIdFromLfsEmbed = (embed: MessageEmbed) => {
   if (embed && embed.author && embed.author.iconURL) {
@@ -24,6 +24,10 @@ export const parseAuthorIdFromLfsEmbed = (embed: MessageEmbed) => {
   }
 
   return null;
+};
+
+export const isLfsTeamEmbed = (embed: MessageEmbed) => {
+  return embed && embed.author && embed.author.iconURL;
 };
 
 type StatsKeys = keyof typeof statsKeysMap;
@@ -45,7 +49,11 @@ export const parseUserStatsFromString = (line: string): StatsPartial | undefined
     const statsRaw = userInfo.filter((info) => STATS.find((stat) => info.includes(stat)));
     const stats: StatsPartial = STATS.reduce((acc, current) => {
       const statRaw = statsRaw.find((raw) => raw.includes(current));
-      const statValue = parseFloat(statRaw?.split(' ').find(parseFloat) || '');
+      const statWord = statRaw?.split(' ').find((n) => {
+        const value = parseFloat(n);
+        return value === 0 ? true : Boolean(value);
+      });
+      const statValue = statWord ? parseFloat(statWord) : NaN;
       const statKey = statsKeysMap[current];
 
       if (typeof statValue === 'number') {
@@ -60,9 +68,11 @@ export const parseUserStatsFromString = (line: string): StatsPartial | undefined
       }
       return acc;
     }, {});
+
     return {
       ...stats,
-      winRatio: stats?.winRatio ? stats?.winRatio / 100 : NaN,
+      winRatio: typeof stats?.winRatio === 'number' ? stats?.winRatio : NaN,
+      bestRank: Object.values(Tier).includes(rank) ? rank : undefined,
     };
   }
 };
@@ -106,6 +116,48 @@ export const parseLfsEmbed = (embed: MessageEmbed): LfsEmbedProps => {
     channel,
     users: parseUsersFromLfsEmbed(embed),
   };
+};
+
+type MessageParsed = {
+  message: Message;
+  embed: MessageEmbed;
+  embedParsed: LfsEmbedProps | null;
+} | null;
+
+export const parseMessagesRelatedToChannel = (
+  messages: Message[] | undefined,
+  voiceChannelId: string | undefined | null,
+): MessageParsed => {
+  if (!messages || !voiceChannelId) return null;
+
+  const messagesUser = messages.filter((m) => {
+    return m.embeds.find((e) => {
+      const channel = parseChannelFromLfsEmbed(e);
+      return channel?.id === voiceChannelId;
+    });
+  });
+
+  const messageSortedByDate = messagesUser.slice().sort((a, b) => {
+    const dateA = a.editedTimestamp ?? a.createdTimestamp;
+    const dateB = b.editedTimestamp ?? b.createdTimestamp;
+    return dateB - dateA;
+  });
+
+  const message = messageSortedByDate.length > 0 ? messageSortedByDate[0] : undefined;
+
+  const embed = message?.embeds[0];
+  if (!message || !embed || !isLfsTeamEmbed(embed)) return null;
+
+  const embedParsed = embed ? parseLfsEmbed(embed) : null;
+  return {
+    message,
+    embed,
+    embedParsed,
+  };
+};
+
+export const isValidEmbed = (parsed: MessageParsed) => {
+  return Boolean(parsed && parsed.message && parsed.embedParsed && parsed.embedParsed.users);
 };
 
 export const deleteAllLfsAuthorEmbeds = async (authorId: string, messages: Collection<Snowflake, Message>) => {

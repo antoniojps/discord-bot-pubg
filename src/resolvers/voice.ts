@@ -1,6 +1,7 @@
 import { VoiceState, Client, Message } from 'discord.js';
-import { EmbedLookingForSomeone } from '../embeds/LookingForSomeone';
-import { parseLfsEmbed, parseUsersIdsFromLfsEmbed } from './../utils/embeds';
+import { EmbedLookingForSomeone, Author } from '../embeds/LookingForSomeone';
+import User from '../models/user';
+import { parseMessagesRelatedToChannel, parseUsersIdsFromLfsEmbed } from './../utils/embeds';
 
 export const voiceResolver = async (client: Client, oldState: VoiceState, newState: VoiceState) => {
   if (!process.env.LFS_CHANNEL_ID) return;
@@ -8,6 +9,8 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
   const hasJoined = newState.channelID;
   const hasSwitched = hasJoined && oldState.channelID && newState.channelID !== oldState.channelID;
   const userId = newState.id;
+  const prevVoiceChannel = oldState.channelID;
+  const newVoiceChannel = newState.channelID;
 
   // find embeds where user is present
   const textChannel = await client.channels.fetch(process.env.LFS_CHANNEL_ID);
@@ -28,30 +31,83 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
 
   if (lfsMessagesUserIsPresent.length === 0) return;
 
+  const prevMessageParsed = parseMessagesRelatedToChannel(lfsMessagesUserIsPresent, prevVoiceChannel);
+  const newMessageParsed = parseMessagesRelatedToChannel(lfsMessagesUserIsPresent, newVoiceChannel);
+
   if (hasJoined) {
     if (hasSwitched) {
-      // Remove ${userId} from embed related to ${oldState.channel} and add to ${newState.channel}
-      // remove from old channel
+      // delete user from previous embed
+      if (prevMessageParsed?.message && prevMessageParsed?.embedParsed && prevMessageParsed?.embedParsed.users) {
+        const { message } = prevMessageParsed;
+        // last user left, delete embed
+        if (prevMessageParsed.embedParsed.users.length === 1) {
+          await message.delete();
+        } else {
+          const usersRemaining = prevMessageParsed.embedParsed.users.filter((u) => u.discordId !== userId);
+          // update author if author left (person to send pm)
+          const hasAuthor = usersRemaining.find((u) => u.discordId === prevMessageParsed.embedParsed?.author.id);
+          const author: Author = hasAuthor
+            ? prevMessageParsed.embedParsed?.author
+            : { id: usersRemaining[0].discordId || '', avatar: null };
 
-      return;
+          await message.edit(
+            '',
+            EmbedLookingForSomeone({
+              ...prevMessageParsed.embedParsed,
+              users: usersRemaining,
+              author,
+            }),
+          );
+        }
+      }
     }
-    // Add ${userId} to embed related to ${newState.channel}
+
+    // Add user to embed related to channel
+    // todo fix why user is not being added
+    console.log({ newMessageParsed });
+    if (newMessageParsed?.message && newMessageParsed?.embedParsed?.users) {
+      const { message } = newMessageParsed;
+      const userDb = await User.findOne({ discordId: userId });
+      const userNew = {
+        pubgNickname: userDb?.pubgNickname ?? '',
+        discordId: userDb?.discordId ?? userId,
+        stats: {
+          kd: userDb?.stats?.kd ?? undefined,
+          avgDamage: userDb?.stats?.avgDamage ?? undefined,
+          bestRank: userDb?.stats?.bestRank ?? undefined,
+          winRatio: userDb?.stats?.winRatio ?? undefined,
+        },
+      };
+      const isValidNewUser = Boolean(
+        userNew?.pubgNickname &&
+          userNew?.discordId &&
+          userNew?.stats.kd &&
+          userNew?.stats.avgDamage &&
+          userNew?.stats.bestRank &&
+          userNew?.stats.winRatio,
+      );
+      const usersNew = isValidNewUser
+        ? [...newMessageParsed.embedParsed.users, userNew]
+        : newMessageParsed.embedParsed.users;
+
+      await message.edit('', EmbedLookingForSomeone({ ...newMessageParsed.embedParsed, users: usersNew }));
+    }
+
     return;
   }
 
-  // Remove ${userId} from embed related to ${oldState.channel}
-  const message = lfsMessagesUserIsPresent[0];
-  const embed = message.embeds[0];
-  const embedParsed = parseLfsEmbed(embed);
-  if (!(embed.footer?.text === 'lfs') || !embedParsed || !embedParsed.users) return;
+  // Remove user from channel embed
+  if (!prevMessageParsed?.message || !prevMessageParsed?.embedParsed || !prevMessageParsed?.embedParsed.users) return;
+  const { message, embedParsed } = prevMessageParsed;
 
   // delete embed if only person on embed left and user has left
-  if (embedParsed.users.length === 1) {
+  if (prevMessageParsed.embedParsed.users.length === 1) {
     await message.delete();
   }
 
   // remove from embed if not the author
   if (
+    embedParsed.users &&
     embedParsed.users.length > 1 &&
     embedParsed.author &&
     embedParsed.author.id !== null &&

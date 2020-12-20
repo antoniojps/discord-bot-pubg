@@ -35,7 +35,17 @@ type PubgSeason = {
   };
 };
 
-export type PubgTier = 'Master' | 'Diamond' | 'Platinum' | 'Gold' | 'Silver' | 'Bronze';
+export enum Tier {
+  Master,
+  Diamond,
+  Platinum,
+  Gold,
+  Silver,
+  Bronze,
+}
+
+export type PubgTier = keyof typeof Tier | string;
+
 interface PubgRankedStats {
   currentTier: {
     tier: PubgTier;
