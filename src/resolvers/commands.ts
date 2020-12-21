@@ -6,6 +6,7 @@ import { EmbedErrorMessage, EmbedError } from '../embeds/Error';
 import { EmbedSuccessMessage } from '../embeds/Success';
 import { parseAuthorIdFromLfsEmbed, deleteAllLfsAuthorEmbeds } from '../utils/embeds';
 import { addStatsRoles, removeRoles } from '../services/roles';
+import { logError } from '../services/logs';
 import { computeChannelUsers, computeUserPartialFromDocument } from './../utils/helpers';
 import User from './../models/user';
 import AntiSpam from './../services/spam';
@@ -227,7 +228,7 @@ export const commandsResolver = async (client: Client, message: Message) => {
     if (isSpamDetected) {
       await message.delete();
       await message.author.send(`<@${message.author.id}>, por favor evita o spam de comandos.`);
-      throw new Error(`Spam detected: ${message.content} by ${message.author.id}`);
+      throw new Error(`Spam detected: ${message.content} by <@${message.author.id}>`);
     }
 
     const resolver = resolvers[command];
@@ -236,5 +237,7 @@ export const commandsResolver = async (client: Client, message: Message) => {
     if (err.name === 'EmbedError' || isAdminChannel) {
       await message.channel.send(EmbedErrorMessage(err.message));
     } else console.error(`Error running command resolver: "${command}"`, err.message);
+
+    await logError(client, message.channel.id, err);
   }
 };

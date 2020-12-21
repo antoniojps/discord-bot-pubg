@@ -5,6 +5,7 @@ import { EmbedPmRequestAccept, EmbedPmRequestDecline } from '../embeds/PmRequest
 import { parseAuthorIdFromLfsEmbed } from '../utils/embeds';
 import { parseUserIdFromMention } from '../utils/helpers';
 import { AntiSpamLfsReaction } from './../services/spam';
+import { logError } from './../services/logs';
 
 type ReactionResolver = (client: Client, reaction: MessageReaction, user: User | PartialUser) => Promise<void>;
 
@@ -142,5 +143,6 @@ export const reactionsResolver = async (client: Client, reaction: MessageReactio
     await resolver(client, reaction, user);
   } catch (err) {
     console.error(`Error running reaction resolver: "${reaction.emoji.name} - "`, err.message);
+    await logError(client, reaction.message.channel.id, err);
   }
 };
