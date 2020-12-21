@@ -1,71 +1,30 @@
-import { VoiceState, Client, Message } from 'discord.js';
-import { EmbedLookingForSomeone, Author } from '../embeds/LookingForSomeone';
+import { VoiceState, Client } from 'discord.js';
+import { EmbedLookingForSomeone } from '../embeds/LookingForSomeone';
 import User from '../models/user';
-import { parseMessagesRelatedToChannel, parseUsersIdsFromLfsEmbed } from './../utils/embeds';
+import { parseMessagesRelatedToChannel } from './../utils/embeds';
 
 export const voiceResolver = async (client: Client, oldState: VoiceState, newState: VoiceState) => {
   if (!process.env.LFS_CHANNEL_ID) return;
 
-  const hasJoined = newState.channelID;
-  const hasSwitched = hasJoined && oldState.channelID && newState.channelID !== oldState.channelID;
+  const prevVoiceChannel = oldState.channel?.id;
+  const newVoiceChannel = newState.channel?.id;
+  const hasJoined = Boolean(newVoiceChannel);
+  const hasSwitched = Boolean(hasJoined && prevVoiceChannel && prevVoiceChannel !== newVoiceChannel);
   const userId = newState.id;
-  const prevVoiceChannel = oldState.channelID;
-  const newVoiceChannel = newState.channelID;
 
   // find embeds where user is present
   const textChannel = await client.channels.fetch(process.env.LFS_CHANNEL_ID);
   if (!textChannel.isText()) return;
 
   const messages = await textChannel.messages.fetch();
-  const lfsMessagesUserIsPresent: Message[] = [];
-  messages.forEach((m) => {
-    if (m.author.bot && m.embeds.length > 0) {
-      const embedsWithUser = m.embeds.filter(
-        (embed) => embed.footer?.text === 'lfs' && parseUsersIdsFromLfsEmbed(embed)?.find((u) => u === userId),
-      );
-      if (embedsWithUser.length > 0) {
-        lfsMessagesUserIsPresent.push(m);
-      }
-    }
-  });
-
-  if (lfsMessagesUserIsPresent.length === 0) return;
-
-  const prevMessageParsed = parseMessagesRelatedToChannel(lfsMessagesUserIsPresent, prevVoiceChannel);
-  const newMessageParsed = parseMessagesRelatedToChannel(lfsMessagesUserIsPresent, newVoiceChannel);
+  const messagesArr = messages.map((m) => m);
 
   if (hasJoined) {
-    if (hasSwitched) {
-      // delete user from previous embed
-      if (prevMessageParsed?.message && prevMessageParsed?.embedParsed && prevMessageParsed?.embedParsed.users) {
-        const { message } = prevMessageParsed;
-        // last user left, delete embed
-        if (prevMessageParsed.embedParsed.users.length === 1) {
-          await message.delete();
-        } else {
-          const usersRemaining = prevMessageParsed.embedParsed.users.filter((u) => u.discordId !== userId);
-          // update author if author left (person to send pm)
-          const hasAuthor = usersRemaining.find((u) => u.discordId === prevMessageParsed.embedParsed?.author.id);
-          const author: Author = hasAuthor
-            ? prevMessageParsed.embedParsed?.author
-            : { id: usersRemaining[0].discordId || '', avatar: null };
-
-          await message.edit(
-            '',
-            EmbedLookingForSomeone({
-              ...prevMessageParsed.embedParsed,
-              users: usersRemaining,
-              author,
-            }),
-          );
-        }
-      }
-    }
-
-    // Add user to embed related to channel
-    // todo fix why user is not being added
-    console.log({ newMessageParsed });
-    if (newMessageParsed?.message && newMessageParsed?.embedParsed?.users) {
+    // add user to embed
+    const newMessageParsed = parseMessagesRelatedToChannel(messagesArr, newVoiceChannel);
+    if (newMessageParsed?.message && newMessageParsed?.embedParsed && newMessageParsed?.embedParsed.users) {
+      const alreadyInEmbed = newMessageParsed.embedParsed.users.find((u) => u.discordId === userId);
+      if (alreadyInEmbed) return;
       const { message } = newMessageParsed;
       const userDb = await User.findOne({ discordId: userId });
       const userNew = {
@@ -81,10 +40,10 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
       const isValidNewUser = Boolean(
         userNew?.pubgNickname &&
           userNew?.discordId &&
-          userNew?.stats.kd &&
-          userNew?.stats.avgDamage &&
+          typeof userNew?.stats.kd === 'number' &&
+          typeof userNew?.stats.avgDamage === 'number' &&
           userNew?.stats.bestRank &&
-          userNew?.stats.winRatio,
+          typeof userNew?.stats.winRatio === 'number',
       );
       const usersNew = isValidNewUser
         ? [...newMessageParsed.embedParsed.users, userNew]
@@ -93,10 +52,16 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
       await message.edit('', EmbedLookingForSomeone({ ...newMessageParsed.embedParsed, users: usersNew }));
     }
 
-    return;
+    // only proceed to deleting the user from another embed if he switched channels
+    if (!hasSwitched) {
+      return;
+    }
   }
 
   // Remove user from channel embed
+  const prevMessageParsed = parseMessagesRelatedToChannel(messagesArr, prevVoiceChannel);
+
+  console.log('removing from embed', { embed: prevMessageParsed?.embedParsed });
   if (!prevMessageParsed?.message || !prevMessageParsed?.embedParsed || !prevMessageParsed?.embedParsed.users) return;
   const { message, embedParsed } = prevMessageParsed;
 
@@ -104,7 +69,6 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
   if (prevMessageParsed.embedParsed.users.length === 1) {
     await message.delete();
   }
-
   // remove from embed if not the author
   if (
     embedParsed.users &&
