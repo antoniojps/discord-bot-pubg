@@ -65,18 +65,12 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
   if (!prevMessageParsed?.message || !prevMessageParsed?.embedParsed || !prevMessageParsed?.embedParsed.users) return;
   const { message, embedParsed } = prevMessageParsed;
 
-  // delete embed if only person on embed left and user has left
-  if (prevMessageParsed.embedParsed.users.length === 1) {
+  // delete embed if only person on embed left or author left
+  if (prevMessageParsed.embedParsed.users.length === 1 || embedParsed.author.id === userId) {
     await message.delete();
   }
   // remove from embed if not the author
-  if (
-    embedParsed.users &&
-    embedParsed.users.length > 1 &&
-    embedParsed.author &&
-    embedParsed.author.id !== null &&
-    embedParsed.author.id !== userId
-  ) {
+  if (embedParsed.users && embedParsed.users.length > 1 && embedParsed.author && embedParsed.author.id !== null) {
     const newUsers = embedParsed.users.filter((u) => u.discordId !== userId);
     await message.edit(
       '',

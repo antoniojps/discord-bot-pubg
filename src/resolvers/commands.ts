@@ -4,7 +4,7 @@ import { EmbedHelp } from '../embeds/Help';
 import { EmbedLookingForSomeone } from '../embeds/LookingForSomeone';
 import { EmbedErrorMessage, EmbedError } from '../embeds/Error';
 import { EmbedSuccessMessage } from '../embeds/Success';
-import { parseAuthorIdFromLfsEmbed, deleteAllLfsAuthorEmbeds } from '../utils/embeds';
+import { parseAuthorIdFromLfsEmbed, deleteAllLfsAuthorEmbeds, parseMessageRelatedToChannel } from '../utils/embeds';
 import { addStatsRoles, removeRoles } from '../services/roles';
 import { logError } from '../services/logs';
 import { computeChannelUsers, computeUserPartialFromDocument } from './../utils/helpers';
@@ -29,6 +29,18 @@ export const resolvers: Resolvers = {
     if (textChannel.isText()) {
       const messages = await textChannel.messages.fetch();
       await deleteAllLfsAuthorEmbeds(message.author.id, messages);
+
+      // should only create lfs if theres not one already related to the channel
+      if (authorVoiceChannel?.id) {
+        const updatedMessages = await textChannel.messages.fetch();
+        const messagesArr = updatedMessages.map((m) => m);
+        const embedOfChannel = parseMessageRelatedToChannel(messagesArr, authorVoiceChannel?.id);
+        if (
+          embedOfChannel?.embedParsed?.channel?.id &&
+          embedOfChannel?.embedParsed?.channel?.id === authorVoiceChannel?.id
+        )
+          return;
+      }
     }
 
     if (authorVoiceChannel && authorVoiceChannel.members.size > 0) {
