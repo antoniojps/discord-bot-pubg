@@ -12,6 +12,8 @@ Para começar no canal **#roles** escreve \`/link PUBG_NICKNAME\` substituindo \
 ${HelpMessageLfs()}
 
 Para atualizar as tuas roles usa \`/update\` no canal **#roles**.
+
+Para obter ajuda escreve \`/help\´ em cada canal.
 `;
 
 export const HelpMessageAdmin = () => `
