@@ -42,7 +42,7 @@ export const EmbedLookingForSomeone = ({ author, channel, users }: LfsEmbedProps
   const missingPlayers = users ? 4 - users.length : 0;
   const missingPlayersContent = users && users.length ? ` +${4 - users.length} ` : ' ';
   const title = channel
-    ? `Procura${missingPlayersContent}jogadores - #${channel.name}`
+    ? `Procura${missingPlayersContent}jogadores - ${channel.name}`
     : `Procura${missingPlayersContent}jogadores`;
   const conclusion = channel
     ? `Para te juntares reaje com ✉️ ou envia PM <@${author.id}>`
@@ -64,8 +64,12 @@ export const EmbedLookingForSomeone = ({ author, channel, users }: LfsEmbedProps
     Embed.setThumbnail(missingPlayersMedia[missingPlayers]).setAuthor(
       title,
       author.avatar
-        ? `https://cdn.discordapp.com/avatars/${author.id}/${author.avatar}.png?size=128&channelId=${channel.id}&channelName=${channel.name}`
-        : `https://i.imgur.com/cqmAKYJ.png?channelId=${channel.id}&channelName=${channel.name}`,
+        ? `https://cdn.discordapp.com/avatars/${author.id}/${author.avatar}.png?size=128&channelId=${
+            channel.id
+          }&channelName=${encodeURIComponent(channel.name ?? '')}`
+        : `https://i.imgur.com/cqmAKYJ.png?channelId=${channel.id}&channelName=${encodeURIComponent(
+            channel.name ?? '',
+          )}`,
     );
   }
   return Embed;

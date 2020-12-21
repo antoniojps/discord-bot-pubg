@@ -62,14 +62,16 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
   const prevMessageParsed = parseMessageRelatedToChannel(messagesArr, prevVoiceChannel);
 
   console.log('removing from embed', { embed: prevMessageParsed?.embedParsed });
+
   if (!prevMessageParsed?.message || !prevMessageParsed?.embedParsed || !prevMessageParsed?.embedParsed.users) return;
   const { message, embedParsed } = prevMessageParsed;
 
   // delete embed if only person on embed left or author left
   if (prevMessageParsed.embedParsed.users.length === 1 || embedParsed.author.id === userId) {
     await message.delete();
+    return;
   }
-  // remove from embed if not the author
+  // remove from embed
   if (embedParsed.users && embedParsed.users.length > 1 && embedParsed.author && embedParsed.author.id !== null) {
     const newUsers = embedParsed.users.filter((u) => u.discordId !== userId);
     await message.edit(
