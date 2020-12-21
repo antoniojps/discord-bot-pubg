@@ -141,6 +141,9 @@ const getPlayerId = async (player: string): Promise<string> => {
       throw new EmbedError(
         `Não encontramos nenhum jogador com o nickname \`${player}\`.  Tens de escrever o nome do PUBG com as letras exatamente iguais ao PUBG (minúsculas e maiúsculas).`,
       );
+
+    if (err.response.status === 429)
+      throw new EmbedError(`✋ Para evitar spam à API do PUBG por favor esperem 1 minuto ⏱ e tentem de novo!`);
     else throw Error(err);
   }
 };
