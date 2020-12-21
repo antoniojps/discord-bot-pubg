@@ -130,14 +130,14 @@ export const parseMessagesRelatedToChannel = (
 ): MessageParsed => {
   if (!messages || !voiceChannelId) return null;
 
-  const messagesUser = messages.filter((m) => {
+  const messagesChannel = messages.filter((m) => {
     return m.embeds.find((e) => {
       const channel = parseChannelFromLfsEmbed(e);
-      return channel?.id === voiceChannelId;
+      return channel?.id === voiceChannelId && isLfsTeamEmbed(e);
     });
   });
 
-  const messageSortedByDate = messagesUser.slice().sort((a, b) => {
+  const messageSortedByDate = messagesChannel.slice().sort((a, b) => {
     const dateA = a.editedTimestamp ?? a.createdTimestamp;
     const dateB = b.editedTimestamp ?? b.createdTimestamp;
     return dateB - dateA;
