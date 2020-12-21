@@ -124,7 +124,7 @@ type MessageParsed = {
   embedParsed: LfsEmbedProps | null;
 } | null;
 
-export const parseMessagesRelatedToChannel = (
+export const parseMessageRelatedToChannel = (
   messages: Message[] | undefined,
   voiceChannelId: string | undefined | null,
 ): MessageParsed => {

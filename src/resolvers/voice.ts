@@ -1,7 +1,7 @@
 import { VoiceState, Client } from 'discord.js';
 import { EmbedLookingForSomeone } from '../embeds/LookingForSomeone';
 import User from '../models/user';
-import { parseMessagesRelatedToChannel } from './../utils/embeds';
+import { parseMessageRelatedToChannel } from './../utils/embeds';
 
 export const voiceResolver = async (client: Client, oldState: VoiceState, newState: VoiceState) => {
   if (!process.env.LFS_CHANNEL_ID) return;
@@ -12,7 +12,6 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
   const hasSwitched = Boolean(hasJoined && prevVoiceChannel && prevVoiceChannel !== newVoiceChannel);
   const userId = newState.id;
 
-  // find embeds where user is present
   const textChannel = await client.channels.fetch(process.env.LFS_CHANNEL_ID);
   if (!textChannel.isText()) return;
 
@@ -21,10 +20,11 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
 
   if (hasJoined) {
     // add user to embed
-    const newMessageParsed = parseMessagesRelatedToChannel(messagesArr, newVoiceChannel);
+    const newMessageParsed = parseMessageRelatedToChannel(messagesArr, newVoiceChannel);
     if (newMessageParsed?.message && newMessageParsed?.embedParsed && newMessageParsed?.embedParsed.users) {
       const alreadyInEmbed = newMessageParsed.embedParsed.users.find((u) => u.discordId === userId);
       if (alreadyInEmbed) return;
+
       const { message } = newMessageParsed;
       const userDb = await User.findOne({ discordId: userId });
       const userNew = {
@@ -59,7 +59,7 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
   }
 
   // Remove user from channel embed
-  const prevMessageParsed = parseMessagesRelatedToChannel(messagesArr, prevVoiceChannel);
+  const prevMessageParsed = parseMessageRelatedToChannel(messagesArr, prevVoiceChannel);
 
   console.log('removing from embed', { embed: prevMessageParsed?.embedParsed });
   if (!prevMessageParsed?.message || !prevMessageParsed?.embedParsed || !prevMessageParsed?.embedParsed.users) return;
