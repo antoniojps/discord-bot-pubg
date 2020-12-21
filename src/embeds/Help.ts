@@ -1,31 +1,25 @@
-import { MessageEmbed } from 'discord.js';
+export const HelpMessageLfs = () => `
+Para começares a procurar uma squad entra numa sala e escreve \`lfs\` no canal **#looking-for-someone**, se tiveres solo não precisas estar numa sala. Podes adicionar uma nota ao pedido com \`lfs "nota"\`.
 
-export const EmbedHelp = () => {
-  return new MessageEmbed()
-    .setColor('#FF0000')
-    .setTitle(`PUBG PT Help`)
-    .setThumbnail('https://pbs.twimg.com/profile_images/1143114325336494080/qGwbqNoz_400x400.jpg')
-    .setDescription(
-      `
-    PUBG PT é um discord bot desenvolvido para a comunidade portuguesa de PUBG
-    de modo a facilitar a procura de jogadores.
-    `,
-    )
-    .addFields(
-      {
-        name: 'Setup inicial',
-        value:
-          'Escreve `/link PUBG_NICKNAME` substituindo `PUBG_NICKNAME` pelo nome da tua conta de modo a receber os roles e stats no discord.',
-      },
-      {
-        name: 'Procura de jogadores',
-        value: '`lfs` para iniciar uma procura por jogadores.\n`-` para cancelar a procura',
-      },
-      {
-        name: 'Outros comandos',
-        value:
-          '`/update` para dar update aos stats e roles de um utilizador previamente linkado.\n`/help` para receber uma PM com um guia geral dos comandos do bot',
-      },
-    )
-    .setTimestamp();
-};
+Se alguém reagir ao teu pedido ✉️ serás notificado por mensagem privada pelo bot 🤙
+`;
+
+export const HelpMessageDefault = () => `
+Olá! Sou um 🤖 bot desenvolvido para a comunidade portuguesa de PUBG de modo a facilitar a procura de jogadores.
+
+Para começar no canal **#roles** escreve \`/link PUBG_NICKNAME\` substituindo \`PUBG_NICKNAME\` pelo nome da tua conta de modo a receber os roles e stats no discord.
+
+${HelpMessageLfs()}
+
+Para atualizar as tuas roles usa \`/update\` no canal **#roles**.
+`;
+
+export const HelpMessageAdmin = () => `
+Enquanto admin tens acesso a alguns comandos adicionais.
+
+\`/link PUBG_NICKNAME DISCORD_ID\`, associa uma conta de pubg a uma conta do discord, se outro utilizador associou a conta anteriormente remove as roles deste.
+
+\`/unlink PUBG_NICKNAME\`, desassocia um utilizador do discord a uma conta de PUBG, remove as roles de stats deste.
+
+Neste canal também aparecem os erros que surgem para efeito de debug e monitorização.
+`;

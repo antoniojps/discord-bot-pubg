@@ -1,6 +1,6 @@
 import argv from 'yargs-parser';
 import { Client, GuildMember, Message } from 'discord.js';
-import { EmbedHelp } from '../embeds/Help';
+import { HelpMessageDefault, HelpMessageLfs, HelpMessageAdmin } from '../embeds/Help';
 import { EmbedLookingForSomeone } from '../embeds/LookingForSomeone';
 import { EmbedErrorMessage, EmbedError } from '../embeds/Error';
 import { EmbedSuccessMessage } from '../embeds/Success';
@@ -232,7 +232,18 @@ export const resolvers: Resolvers = {
   },
   '/help': async (client, message) => {
     await message.delete();
-    await message.author.send(EmbedHelp());
+
+    if (message.channel.id === process.env.ROLES_CHANNEL_ID) {
+      await message.channel.send(HelpMessageDefault());
+    }
+
+    if (message.channel.id === process.env.LFS_CHANNEL_ID) {
+      await message.author.send(HelpMessageLfs());
+    }
+
+    if (message.channel.id === process.env.ADMIN_CHANNEL_ID) {
+      await message.channel.send(HelpMessageAdmin());
+    }
   },
 };
 
