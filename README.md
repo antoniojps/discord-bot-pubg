@@ -33,7 +33,7 @@ Add the bot the server, to do so visit the link: `https://discord.com/oauth2/aut
 
 | Command                          | Channel            | Description                                                                                                                                                         |
 |----------------------------------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `lfs`                            | `LFS_CHANNEL_ID`   | Creates a LFS embed                                                                                                                                                 |
+| `lfs` or `lfs "note"`            | `LFS_CHANNEL_ID`   | Creates a LFS embed with a possible note                                                                                                                                                |
 | `-`                              | `LFS_CHANNEL_ID`   | Deletes the last LFS embed of the author                                                                                                                            |
 | `/link PUBG_NICKNAME`            | `ROLES_CHANNEL_ID` | Assigns a pubg nickname to the author and roles according to stats                                                                                                  |
 | `/update`                        | `ROLES_CHANNEL_ID` | Updates user pubg stats for users already linked                                                                                                                    |

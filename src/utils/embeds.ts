@@ -10,6 +10,8 @@ import {
 import { NOT_FOUND_MESSAGE, LfsEmbedProps } from './../embeds/LookingForSomeone';
 import { StatsPartial, Tier } from './../services/pubg';
 
+const BLOQUOTE = /\> (.*$)/im;
+
 export const parseAuthorIdFromLfsEmbed = (embed: MessageEmbed) => {
   if (embed && embed.author && embed.author.iconURL) {
     const avatarUrl = new URL(embed.author.iconURL);
@@ -81,9 +83,14 @@ export const parseUsersFromLfsEmbed = (embed: MessageEmbed) => {
   const lines = embed.description
     ?.split('\n')
     .map((l) => l.trim())
-    .filter(Boolean)
-    .slice(0, -1);
-  const users = lines?.map((line) => {
+    .filter(Boolean);
+  const last = lines && lines.length > 0 ? lines[lines.length - 1] : '';
+
+  const hasNote = BLOQUOTE.test(last);
+  const linesToRemove = hasNote ? 2 : 1;
+  const usersLines = lines?.slice(0, -linesToRemove);
+
+  const users = usersLines?.map((line) => {
     const pubgNickname = parsePubgNickFromQueryString(line);
     return {
       pubgNickname: pubgNickname ?? '',
@@ -95,19 +102,32 @@ export const parseUsersFromLfsEmbed = (embed: MessageEmbed) => {
   return users;
 };
 
+export const parseNoteFromLfsEmbed = (embed: MessageEmbed) => {
+  const noteMatch = embed.description ? BLOQUOTE.exec(embed.description) : ['', ''];
+  const note = noteMatch ? noteMatch[1] : '';
+
+  return note;
+};
+
 export const parseUsersIdsFromLfsEmbed = (embed: MessageEmbed) => {
   const lines = embed.description
     ?.split('\n')
     .map((l) => l.trim())
-    .filter(Boolean)
-    .slice(0, -1);
-  const users = lines?.map((line) => parseUserIdFromQueryString(line) || parseUserIdFromMention(line));
+    .filter(Boolean);
+
+  const hasNote = lines && lines.length > 0 ? BLOQUOTE.test(lines[lines.length - 1]) : false;
+  const linesToRemove = hasNote ? 2 : 1;
+  const usersLines = lines?.slice(0, -linesToRemove);
+
+  const users = usersLines?.map((line) => parseUserIdFromQueryString(line) || parseUserIdFromMention(line));
 
   return users;
 };
 
 export const parseLfsEmbed = (embed: MessageEmbed): LfsEmbedProps => {
   const channel = parseChannelFromLfsEmbed(embed);
+  const note = parseNoteFromLfsEmbed(embed);
+
   return {
     author: {
       id: parseAuthorIdFromLfsEmbed(embed) ?? '',
@@ -115,6 +135,7 @@ export const parseLfsEmbed = (embed: MessageEmbed): LfsEmbedProps => {
     },
     channel,
     users: parseUsersFromLfsEmbed(embed),
+    note,
   };
 };
 

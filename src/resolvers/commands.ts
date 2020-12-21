@@ -7,7 +7,7 @@ import { EmbedSuccessMessage } from '../embeds/Success';
 import { parseAuthorIdFromLfsEmbed, deleteAllLfsAuthorEmbeds, parseMessageRelatedToChannel } from '../utils/embeds';
 import { addStatsRoles, removeRoles } from '../services/roles';
 import { logError } from '../services/logs';
-import { computeChannelUsers, computeUserPartialFromDocument } from './../utils/helpers';
+import { computeChannelUsers, computeUserPartialFromDocument, clearQuotes } from './../utils/helpers';
 import User from './../models/user';
 import AntiSpam from './../services/spam';
 
@@ -18,11 +18,12 @@ type Resolvers = {
 };
 
 export const resolvers: Resolvers = {
-  lfs: async (client, message) => {
+  lfs: async (client, message, argumentsParsed) => {
     if (message.channel.id !== process.env.LFS_CHANNEL_ID) return;
 
     await message.delete();
     const authorVoiceChannel = message.member?.voice.channel;
+    const note = clearQuotes(argumentsParsed._[1]) ?? '';
 
     // delete previous lfs embeds
     const textChannel = await client.channels.fetch(process.env.LFS_CHANNEL_ID);
@@ -62,6 +63,7 @@ export const resolvers: Resolvers = {
             id: authorVoiceChannel.id,
             name: authorVoiceChannel.name,
           },
+          note,
         }),
       );
       await embed.react('✉️');
@@ -75,6 +77,7 @@ export const resolvers: Resolvers = {
             avatar: message.author.avatar,
           },
           users,
+          note,
         }),
       );
       await embed.react('👍');
