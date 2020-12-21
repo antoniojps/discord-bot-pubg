@@ -17,6 +17,8 @@ type Resolvers = {
   [key: string]: CommandResolver;
 };
 
+const NOTE_LIMIT_CHARS = 120;
+
 export const resolvers: Resolvers = {
   lfs: async (client, message, argumentsParsed) => {
     if (message.channel.id !== process.env.LFS_CHANNEL_ID) return;
@@ -24,6 +26,12 @@ export const resolvers: Resolvers = {
     await message.delete();
     const authorVoiceChannel = message.member?.voice.channel;
     const note = clearQuotes(argumentsParsed._[1]) ?? '';
+
+    if (note.length - 1 > NOTE_LIMIT_CHARS) {
+      throw new EmbedError(
+        `<@${message.author.id}> escreve no máximo uma nota com 120 caractéres no comando \`lfs "NOTA"\`.`,
+      );
+    }
 
     // delete previous lfs embeds
     const textChannel = await client.channels.fetch(process.env.LFS_CHANNEL_ID);
