@@ -1,5 +1,6 @@
-export const HelpMessageLfs = (channel: string) => `
-Para  procurar uma squad entra numa sala e escreve \`lfs\` no canal ${channel}, se tiveres solo não precisas estar numa sala. Podes adicionar uma nota ao pedido com \`lfs "nota"\`.  Se alguém reagir ao teu pedido ✉️ serás notificado por mensagem privada pelo bot 🤖.
+export const HelpMessageLfs = (channel: string) =>
+  `
+Para  procurar uma squad entra numa sala e escreve \`lfs\` no canal ${channel}, se tiveres solo não precisas estar numa sala. Podes adicionar uma nota ao pedido com \`lfs "nota"\`.  Se alguém reagir ao teu pedido ✉️ serás notificado por mensagem privada pelo bot 🤖. Se pretendes cancelar a procura escreve \`-\`.
 `;
 
 export const HelpMessageDefault = (rolesChannel: string, lfsChannel: string) => `

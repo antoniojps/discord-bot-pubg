@@ -13,12 +13,13 @@ Don't be a crybaby: clone, install and run the commands
 1. Clone this repository: `git clone git@github.com:antoniojps/discord-bot-pubg.git`
 2. `cd discord-bot-pubg`
 3. `yarn install`
-4. `yarn start`
+4. `tsc -w` and `yarn start`
 
 ## Available commands
 
 | Command      | Description                                                      |
 | :----------- | :--------------------------------------------------------------- |
+| `yarn start:dev` | Create an optimized bundle and serve with the dev server. |
 | `yarn start` | Create an optimized bundle and serve with the production server. |
 
 ## Bot
