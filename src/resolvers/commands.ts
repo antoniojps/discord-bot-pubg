@@ -25,6 +25,7 @@ export const resolvers: Resolvers = {
 
     await message.delete();
     const authorVoiceChannel = message.member?.voice.channel;
+    const isNoteValid = /^"(.*?)"$/.test(argumentsParsed._[1]);
     const note = clearQuotes(argumentsParsed._[1]) ?? '';
 
     if (note.length - 1 > NOTE_LIMIT_CHARS) {
@@ -71,7 +72,7 @@ export const resolvers: Resolvers = {
             id: authorVoiceChannel.id,
             name: authorVoiceChannel.name,
           },
-          note,
+          note: isNoteValid ? note : '',
         }),
       );
       await embed.react('✉️');
@@ -85,7 +86,7 @@ export const resolvers: Resolvers = {
             avatar: message.author.avatar,
           },
           users,
-          note,
+          note: isNoteValid ? note : '',
         }),
       );
       await embed.react('👍');
@@ -249,10 +250,6 @@ export const resolvers: Resolvers = {
     if (message.channel.id === process.env.ADMIN_CHANNEL_ID) {
       await message.channel.send(HelpMessageAdmin());
     }
-  },
-  '/channel': async (client, message) => {
-    await message.delete();
-    await message.channel.send(message.channel.toString());
   },
 };
 
