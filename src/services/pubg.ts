@@ -192,6 +192,9 @@ export const getPlayerStats = async (player: string): Promise<Stats> => {
       roundsPlayed,
     };
   } catch (err) {
+    if (err.response.status === 404)
+      throw new EmbedError(`É necessário jogar no mínimo ${MINIMUM_GAMES} jogos de ranked para obter as roles.`);
+
     if (err.name === 'EmbedError') {
       throw new EmbedError(err.message);
     } else throw new Error(err);
