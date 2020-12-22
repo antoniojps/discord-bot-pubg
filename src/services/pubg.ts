@@ -137,12 +137,12 @@ const getPlayerId = async (player: string): Promise<string> => {
       );
     return accountId;
   } catch (err) {
-    if (err.response.status === 404)
+    if (err && err.response && err.response.status && err.response.status === 404)
       throw new EmbedError(
         `Não encontramos nenhum jogador com o nickname \`${player}\`.  Tens de escrever o nome do PUBG com as letras exatamente iguais ao PUBG (minúsculas e maiúsculas).`,
       );
 
-    if (err.response.status === 429)
+    if (err && err.response && err.response.status && err.response.status === 429)
       throw new EmbedError(`✋ Para evitar spam à API do PUBG por favor esperem 1 minuto ⏱ e tentem de novo!`);
     else throw Error(err);
   }
@@ -192,7 +192,7 @@ export const getPlayerStats = async (player: string): Promise<Stats> => {
       roundsPlayed,
     };
   } catch (err) {
-    if (err.response.status === 404)
+    if (err && err.response && err.response.status === 404)
       throw new EmbedError(`É necessário jogar no mínimo ${MINIMUM_GAMES} jogos de ranked para obter as roles.`);
 
     if (err.name === 'EmbedError') {
