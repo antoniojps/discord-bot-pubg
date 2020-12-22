@@ -18,6 +18,8 @@ type Resolvers = {
 };
 
 const NOTE_LIMIT_CHARS = 120;
+const QUOTE_REGEX = /^"(.*?)"$/;
+const ALLOWED_ROLES = ['free agent'];
 
 export const resolvers: Resolvers = {
   lfs: async (client, message, argumentsParsed) => {
@@ -25,7 +27,7 @@ export const resolvers: Resolvers = {
 
     await message.delete();
     const authorVoiceChannel = message.member?.voice.channel;
-    const isNoteValid = /^"(.*?)"$/.test(argumentsParsed._[1]);
+    const isNoteValid = QUOTE_REGEX.test(argumentsParsed._[1]);
     const note = clearQuotes(argumentsParsed._[1]) ?? '';
 
     if (note.length - 1 > NOTE_LIMIT_CHARS) {
@@ -250,6 +252,56 @@ export const resolvers: Resolvers = {
     if (message.channel.id === process.env.ADMIN_CHANNEL_ID) {
       await message.channel.send(HelpMessageAdmin());
     }
+  },
+  '/role': async (client, message, argumentsParsed) => {
+    if (message.channel.id !== process.env.ROLES_CHANNEL_ID || !process.env.DISCORD_SERVER_ID) return;
+
+    const isRoleValid = QUOTE_REGEX.test(argumentsParsed._[1]);
+    const roleName = isRoleValid ? clearQuotes(argumentsParsed._[1]).toLowerCase() : '';
+
+    if (!isRoleValid) {
+      await message.channel.send(
+        EmbedErrorMessage(
+          `<@${
+            message.author.id
+          }> role inválida, não te esqueças de escrever o nome da role entre aspas. Roles disponíveis: **${ALLOWED_ROLES.join(
+            ', ',
+          )}**.`,
+        ),
+      );
+      return;
+    }
+
+    if (!ALLOWED_ROLES.includes(roleName)) {
+      await message.channel.send(
+        EmbedErrorMessage(
+          `<@${message.author.id}> apenas podes adicionar/remover as seguintes roles: **${ALLOWED_ROLES.join(', ')}**.`,
+        ),
+      );
+      return;
+    }
+
+    const guild = await client.guilds.fetch(process.env.DISCORD_SERVER_ID);
+    const role = roleName ? guild.roles.cache.find((r) => r.name.toLowerCase() === roleName, {}) : null;
+
+    if (role) {
+      // remove when already has role
+      const memberRole = message.member?.roles.cache.find((r) => r.name.toLowerCase() === roleName);
+      if (memberRole) {
+        await message.member?.roles.remove(memberRole);
+        await message.channel.send(EmbedSuccessMessage(`<@${message.author.id}> role **${role.name}** removida.`));
+        return;
+      }
+      // add
+      await message.member?.roles.add(role);
+      await message.channel.send(EmbedSuccessMessage(`<@${message.author.id}> role **${role.name}** adicionada.`));
+
+      return;
+    }
+
+    await message.channel.send(
+      EmbedErrorMessage(`<@${message.author.id}> role "${roleName}" não existe. Escreveste corretamente?`),
+    );
   },
 };
 

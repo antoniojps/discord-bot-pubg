@@ -9,6 +9,7 @@ Olá! Sou um 🤖 bot desenvolvido para a comunidade portuguesa de PUBG de modo 
 Neste canal ${rolesChannel} escreve \`/link PUBG_NICKNAME\` substituindo \`PUBG_NICKNAME\` pelo nome da tua conta de modo a receber os roles e stats no discord.
 ${HelpMessageLfs(lfsChannel)}
 Usa \`/update\` no canal ${rolesChannel} para atualizar as estatísticas.
+Usa \`/role "NOME_DA_ROLE"\` no canal ${rolesChannel} para adicionar ou remover uma role.
 Usa \`/help\` em cada canal para obter ajuda.
 `;
 
