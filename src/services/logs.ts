@@ -1,5 +1,6 @@
 import { Client } from 'discord.js';
 import { EmbedErrorMessage } from './../embeds/Error';
+import { EmbedDefaultMessage } from './../embeds/Default';
 
 export const logError = async (client: Client, channelId: string, err: Error) => {
   const isAdminChannel = channelId === process.env.ADMIN_CHANNEL_ID;
@@ -13,5 +14,13 @@ export const logError = async (client: Client, channelId: string, err: Error) =>
     if (adminChannel?.isText()) {
       adminChannel.send(EmbedErrorMessage(err.message));
     }
+  }
+};
+
+export const logAdminMessage = async (client: Client, message: string) => {
+  const adminChannel = process.env.ADMIN_CHANNEL_ID ? await client.channels.fetch(process.env.ADMIN_CHANNEL_ID) : null;
+
+  if (adminChannel?.isText()) {
+    adminChannel.send(EmbedDefaultMessage(message));
   }
 };

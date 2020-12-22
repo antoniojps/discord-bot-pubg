@@ -6,7 +6,7 @@ import { EmbedErrorMessage, EmbedError } from '../embeds/Error';
 import { EmbedSuccessMessage } from '../embeds/Success';
 import { parseAuthorIdFromLfsEmbed, deleteAllLfsAuthorEmbeds, parseMessageRelatedToChannel } from '../utils/embeds';
 import { addStatsRoles, removeRoles } from '../services/roles';
-import { logError } from '../services/logs';
+import { logError, logAdminMessage } from '../services/logs';
 import { computeChannelUsers, computeUserPartialFromDocument, clearQuotes } from './../utils/helpers';
 import User from './../models/user';
 import AntiSpam from './../services/spam';
@@ -19,7 +19,7 @@ type Resolvers = {
 
 const NOTE_LIMIT_CHARS = 120;
 const QUOTE_REGEX = /^"(.*?)"$/;
-const ALLOWED_ROLES = ['free agent'];
+const ALLOWED_ROLES = ['free agent', 'streamer'];
 
 export const resolvers: Resolvers = {
   lfs: async (client, message, argumentsParsed) => {
@@ -290,12 +290,28 @@ export const resolvers: Resolvers = {
       if (memberRole) {
         await message.member?.roles.remove(memberRole);
         await message.channel.send(EmbedSuccessMessage(`<@${message.author.id}> role **${role.name}** removida.`));
+        if (roleName === 'streamer') {
+          logAdminMessage(
+            client,
+            `Senhores administradores, removam o <@${message.author.id}> do [stream bot](https://mee6.xyz/dashboard/345984356340203520/twitch).`,
+          );
+        }
+
         return;
       }
       // add
       await message.member?.roles.add(role);
-      await message.channel.send(EmbedSuccessMessage(`<@${message.author.id}> role **${role.name}** adicionada.`));
-
+      await message.channel.send(
+        EmbedSuccessMessage(
+          `<@${message.author.id}> role **${role.name}** adicionada. Por favor escreve aqui o link para o teu perfil na twitch.`,
+        ),
+      );
+      if (roleName === 'streamer') {
+        logAdminMessage(
+          client,
+          `Senhores administradores, adicionem o <@${message.author.id}> ao [stream bot](https://mee6.xyz/dashboard/345984356340203520/twitch)`,
+        );
+      }
       return;
     }
 
