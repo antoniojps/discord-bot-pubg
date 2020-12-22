@@ -37,15 +37,8 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
           winRatio: userDb?.stats?.winRatio ?? undefined,
         },
       };
-      const isValidNewUser = Boolean(
-        userNew?.pubgNickname &&
-          userNew?.discordId &&
-          typeof userNew?.stats.kd === 'number' &&
-          typeof userNew?.stats.avgDamage === 'number' &&
-          userNew?.stats.bestRank &&
-          typeof userNew?.stats.winRatio === 'number',
-      );
-      const usersNew = isValidNewUser
+
+      const usersNew = userNew?.discordId
         ? [...newMessageParsed.embedParsed.users, userNew]
         : newMessageParsed.embedParsed.users;
 
@@ -60,9 +53,6 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
 
   // Remove user from channel embed
   const prevMessageParsed = parseMessageRelatedToChannel(messagesArr, prevVoiceChannel);
-
-  console.log('removing from embed', { embed: prevMessageParsed?.embedParsed });
-
   if (!prevMessageParsed?.message || !prevMessageParsed?.embedParsed || !prevMessageParsed?.embedParsed.users) return;
   const { message, embedParsed } = prevMessageParsed;
 
