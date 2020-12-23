@@ -39,11 +39,12 @@ export type LfsEmbedProps = {
   channel?: Channel | null;
   note?: string;
   users: LfsUsers;
+  footer?: string;
 };
 
 export const NOT_FOUND_MESSAGE = '¯\\_(ツ)_/¯';
 
-export const EmbedLookingForSomeone = ({ author, channel, users, note }: LfsEmbedProps) => {
+export const EmbedLookingForSomeone = ({ author, channel, users, note, footer }: LfsEmbedProps) => {
   const usersList = users?.map((user) => {
     if (user.pubgNickname === '' || user.stats === undefined) return `\n<@${user.discordId}>${NOT_FOUND_MESSAGE}`;
     return `\n**[${user?.pubgNickname}](https://pubg.op.gg/user/${user?.pubgNickname}?discordId=${user.discordId}&nick=${user?.pubgNickname})** - ${user?.stats?.bestRank}, KD ${user?.stats?.kd}, ADR ${user?.stats?.avgDamage}, WR ${user?.stats?.winRatio}%`;
@@ -68,7 +69,7 @@ export const EmbedLookingForSomeone = ({ author, channel, users, note }: LfsEmbe
         ${note ? `> ${note}` : ''}
       `,
     )
-    .setFooter('lfs')
+    .setFooter(footer ?? 'lfs')
     .setTimestamp();
 
   const thumbnail =

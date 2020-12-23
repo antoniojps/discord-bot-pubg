@@ -58,7 +58,13 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
 
   // delete embed if only person on embed left or author left
   if (prevMessageParsed.embedParsed.users.length === 1 || embedParsed.author.id === userId) {
-    await message.delete();
+    await message.edit(
+      '',
+      EmbedLookingForSomeone({
+        ...embedParsed,
+        footer: 'saiu',
+      }),
+    );
     return;
   }
   // remove from embed

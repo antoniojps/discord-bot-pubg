@@ -29,7 +29,9 @@ export const parseAuthorIdFromLfsEmbed = (embed: MessageEmbed) => {
 };
 
 export const isLfsTeamEmbed = (embed: MessageEmbed) => {
-  return embed && embed.author && embed.author.iconURL;
+  const hasIconURL = embed && embed.author && embed.author.iconURL;
+  const hasType = embed && embed.footer && embed.footer?.text === 'lfs';
+  return hasIconURL && hasType;
 };
 
 type StatsKeys = keyof typeof statsKeysMap;
@@ -185,7 +187,9 @@ export const deleteAllLfsAuthorEmbeds = async (authorId: string, messages: Colle
   const deleteMessagesPromises: Promise<Message>[] = [];
   messages.forEach((m) => {
     if (m.author.bot && m.embeds.length > 0) {
-      const embedsGeneratedByAuthor = m.embeds.filter((embed) => parseAuthorIdFromLfsEmbed(embed) === authorId);
+      const embedsGeneratedByAuthor = m.embeds.filter(
+        (embed) => isLfsTeamEmbed(embed) && parseAuthorIdFromLfsEmbed(embed) === authorId,
+      );
       if (embedsGeneratedByAuthor.length > 0) {
         deleteMessagesPromises.push(m.delete());
       }
