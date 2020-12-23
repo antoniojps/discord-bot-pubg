@@ -24,6 +24,8 @@ export const triggers: Triggers = {
 export const TRIGGERS_AVAILABLE = Object.keys(triggers);
 
 export const triggersResolver = async (client: Client, message: Message) => {
+  if (message.author.bot) return;
+
   try {
     AntiSpam.log(message.author.id, message.content);
     const isSpamDetected = await AntiSpam.checkMessageInterval(message); // Check sent messages interval
@@ -33,12 +35,12 @@ export const triggersResolver = async (client: Client, message: Message) => {
       throw new Error(`Spam detected: ${message.content} by <@${message.author.id}>`);
     }
 
-    const content = clearMessage(message.content);
+    const content = message.content ? clearMessage(message.content) : '';
+    if (content === '') return;
 
     TRIGGERS_AVAILABLE.forEach(async (key) => {
       const trigger = triggers[key];
       if (trigger.words.some((w) => content.includes(w))) {
-        console.log('it should trigger');
         await trigger.resolver(client, message);
       }
     });
