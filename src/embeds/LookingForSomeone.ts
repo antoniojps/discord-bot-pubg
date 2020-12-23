@@ -49,6 +49,14 @@ export type LfsEmbedProps = {
 
 export const NOT_FOUND_MESSAGE = '¯\\_(ツ)_/¯';
 
+const computeConclusion = (type: EmbedType, users: LfsUsers, authorId: string, channel?: Channel | null) => {
+  if (users && users.length >= 4) return ``;
+  if (type === EmbedType.cancelado) return `Pedido de procura de jogadores cancelado.`;
+  return channel
+    ? `Para te juntares reaje com ✉️ ou envia PM <@${authorId}>`
+    : `Para convidar entra num canal e reaje com 👍 ou envia PM <@${authorId}>`;
+};
+
 export const EmbedLookingForSomeone = ({ author, channel, users, note, footer }: LfsEmbedProps) => {
   const usersList = users?.map((user) => {
     if (user.pubgNickname === '' || user.stats === undefined) return `\n<@${user.discordId}>${NOT_FOUND_MESSAGE}`;
@@ -60,11 +68,8 @@ export const EmbedLookingForSomeone = ({ author, channel, users, note, footer }:
 
   const title = missingPlayers > 0 ? `Procura${missingPlayersContent}jogadores` : `Squad completa`;
   const titleChannel = channel ? `${title} - ${channel.name}` : title;
-  const lfsConclusion = channel
-    ? `Para te juntares reaje com ✉️ ou envia PM <@${author.id}>`
-    : `Para convidar entra num canal e reaje com 👍 ou envia PM <@${author.id}>`;
-  const footerType = footer ?? EmbedType.lfs;
-  const conclusion = footerType === EmbedType.lfs ? lfsConclusion : `Pedido de procura de jogadores cancelado.`;
+  const embedType = footer ?? EmbedType.lfs;
+  const conclusion = computeConclusion(embedType, users, author.id, channel);
 
   const Embed = new MessageEmbed()
     .setColor('#0099ff')

@@ -81,3 +81,29 @@ export const computeChannelUsers = (
 
 export const millisToMinutes = (millis: number) => Math.floor(millis / 60000);
 export const clearQuotes = (str: string) => str?.replace(/^["'](.+(?=["']$))["']$/, '$1');
+
+export const removeAccent = (content: string) => {
+  const strAccents = content.split('');
+
+  const strAccentsOut = [];
+  const strAccentsLen = strAccents.length;
+
+  const accents = 'ÀÁÂÃÄÅàáâãäåÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž';
+  const accentsOut = 'AAAAAAaaaaaaOOOOOOOooooooEEEEeeeeeCcDIIIIiiiiUUUUuuuuNnSsYyyZz';
+
+  for (let y = 0; y < strAccentsLen; y += 1) {
+    if (accents.indexOf(strAccents[y]) !== -1) {
+      strAccentsOut[y] = accentsOut.substr(accents.indexOf(strAccents[y]), 1);
+    } else {
+      strAccentsOut[y] = strAccents[y];
+    }
+  }
+
+  const strAccentsOutJoined = strAccentsOut.join('');
+
+  return strAccentsOutJoined;
+};
+
+export const clearMessage = (content: string) => {
+  return removeAccent(content.toLowerCase().replace(/\s+/g, ''));
+};
