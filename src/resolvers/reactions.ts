@@ -2,7 +2,7 @@ import { Client, MessageReaction, User, PartialUser } from 'discord.js';
 import { EmbedPmRequest } from '../embeds/PmRequest';
 import { EmbedPmNotice, EmbedPmNoticeAccept, EmbedPmNoticeWelcome, EmbedPmNoticeDecline } from '../embeds/PmNotice';
 import { EmbedPmRequestAccept, EmbedPmRequestDecline } from '../embeds/PmRequest';
-import { parseAuthorIdFromLfsEmbed } from '../utils/embeds';
+import { parseAuthorIdFromLfsEmbed, isLfsTeamEmbed } from '../utils/embeds';
 import { parseUserIdFromMention } from '../utils/helpers';
 import { AntiSpamLfsReaction } from './../services/spam';
 import { logError } from './../services/logs';
@@ -20,7 +20,6 @@ export const resolvers: Resolvers = {
     if (reaction.message.channel.id !== process.env.LFS_CHANNEL_ID) throw new Error('Forbidden: Invalid lfs channel');
 
     const [embed] = reaction.message.embeds;
-    const embedType = embed.footer?.text;
 
     const authorEmbed: User | PartialUser | undefined = client.users.cache.find(
       (user) => user.id === parseAuthorIdFromLfsEmbed(embed),
@@ -28,7 +27,7 @@ export const resolvers: Resolvers = {
     const authorReaction: User | PartialUser = user;
 
     // most be a lfs embed and author different from "reactor"
-    if (authorEmbed && authorEmbed?.id !== authorReaction.id && embedType === 'lfs') {
+    if (authorEmbed && authorEmbed?.id !== authorReaction.id && isLfsTeamEmbed(embed)) {
       const isSpam = AntiSpamLfsReaction.parse({
         reaction: reaction.emoji.name,
         lfsAuthorId: authorEmbed.id,

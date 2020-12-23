@@ -1,5 +1,5 @@
 import { VoiceState, Client } from 'discord.js';
-import { EmbedLookingForSomeone } from '../embeds/LookingForSomeone';
+import { EmbedLookingForSomeone, EmbedType } from '../embeds/LookingForSomeone';
 import User from '../models/user';
 import { parseMessageRelatedToChannel } from './../utils/embeds';
 
@@ -62,7 +62,7 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
       '',
       EmbedLookingForSomeone({
         ...embedParsed,
-        footer: 'saiu',
+        footer: EmbedType.cancelado,
       }),
     );
     return;

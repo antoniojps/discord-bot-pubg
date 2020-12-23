@@ -34,12 +34,17 @@ export type LfsUsers =
     }[]
   | undefined;
 
+export enum EmbedType {
+  lfs = 'lfs',
+  cancelado = 'cancelado',
+}
+
 export type LfsEmbedProps = {
   author: Author;
   channel?: Channel | null;
   note?: string;
   users: LfsUsers;
-  footer?: string;
+  footer?: EmbedType;
 };
 
 export const NOT_FOUND_MESSAGE = '¯\\_(ツ)_/¯';
@@ -55,9 +60,11 @@ export const EmbedLookingForSomeone = ({ author, channel, users, note, footer }:
 
   const title = missingPlayers > 0 ? `Procura${missingPlayersContent}jogadores` : `Squad completa`;
   const titleChannel = channel ? `${title} - ${channel.name}` : title;
-  const conclusion = channel
+  const lfsConclusion = channel
     ? `Para te juntares reaje com ✉️ ou envia PM <@${author.id}>`
     : `Para convidar entra num canal e reaje com 👍 ou envia PM <@${author.id}>`;
+  const footerType = footer ?? EmbedType.lfs;
+  const conclusion = footerType === EmbedType.lfs ? lfsConclusion : `Pedido de procura de jogadores cancelado.`;
 
   const Embed = new MessageEmbed()
     .setColor('#0099ff')
@@ -69,7 +76,7 @@ export const EmbedLookingForSomeone = ({ author, channel, users, note, footer }:
         ${note ? `> ${note}` : ''}
       `,
     )
-    .setFooter(footer ?? 'lfs')
+    .setFooter(footer ?? EmbedType.lfs)
     .setTimestamp();
 
   const thumbnail =
