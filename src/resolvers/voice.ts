@@ -1,5 +1,5 @@
 import { VoiceState, Client } from 'discord.js';
-import { EmbedLookingForSomeone } from '../embeds/LookingForSomeone';
+import { EmbedLookingForSomeone, EmbedType } from '../embeds/LookingForSomeone';
 import User from '../models/user';
 import { parseMessageRelatedToChannel } from './../utils/embeds';
 
@@ -58,7 +58,13 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
 
   // delete embed if only person on embed left or author left
   if (prevMessageParsed.embedParsed.users.length === 1 || embedParsed.author.id === userId) {
-    await message.delete();
+    await message.edit(
+      '',
+      EmbedLookingForSomeone({
+        ...embedParsed,
+        footer: EmbedType.cancelado,
+      }),
+    );
     return;
   }
   // remove from embed
