@@ -42,6 +42,10 @@ Add the bot the server, to do so visit the link: `https://discord.com/oauth2/aut
 | `/link PUBG_NICKNAME DISCORD_ID` | `ADMIN_CHANNEL_ID` | Assigns a pubg nickname to the user of the discord id and roles according to stats, if someone is linked to that pubg account he will be unlinked and roles removed |
 | `/unlink PUBG_NICKNAME`          | `ADMIN_CHANNEL_ID` | If someone is linked to that pubg account he will be unlinked and roles removed                                                                                     |
 | `/help`                          | `LFS_CHANNEL_ID`, `ROLES_CHANNELL_ID`, `ADMIN_CHANNEL_ID`      | Sends a PM to the User with a General Guide to the bot commands, or sends message with help commands.                       |
+| `/order`                          | any      | Sends a "ORDER" gif                     |
+
+### Triggers
+If someone uses lousy words the bot will reply with a notice.
 
 ### Usage
 
