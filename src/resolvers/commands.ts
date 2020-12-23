@@ -241,7 +241,7 @@ export const resolvers: Resolvers = {
     if (message.channel.id === process.env.ROLES_CHANNEL_ID) {
       const rolesChannel = await client.channels.fetch(process.env.ROLES_CHANNEL_ID);
       const lfsChannel = await client.channels.fetch(process.env.LFS_CHANNEL_ID);
-      await message.channel.send(HelpMessageDefault(rolesChannel.toString(), lfsChannel.toString()));
+      await message.channel.send(HelpMessageDefault(rolesChannel.toString(), lfsChannel.toString(), ALLOWED_ROLES));
     }
 
     if (message.channel.id === process.env.LFS_CHANNEL_ID) {
@@ -264,9 +264,9 @@ export const resolvers: Resolvers = {
         EmbedErrorMessage(
           `<@${
             message.author.id
-          }> role inválida, não te esqueças de escrever o nome da role entre aspas. Roles disponíveis: **${ALLOWED_ROLES.join(
-            ', ',
-          )}**.`,
+          }> role inválida, não te esqueças de escrever o nome da role entre aspas. Roles disponíveis: **${ALLOWED_ROLES.map(
+            (r) => `\`"${r}"\``,
+          ).join(',')}**.`,
         ),
       );
       return;
@@ -303,7 +303,9 @@ export const resolvers: Resolvers = {
       await message.member?.roles.add(role);
       await message.channel.send(
         EmbedSuccessMessage(
-          `<@${message.author.id}> role **${role.name}** adicionada. Por favor escreve aqui o link para o teu perfil na twitch.`,
+          `<@${message.author.id}> role **${role.name}** adicionada. ${
+            roleName === 'streamer' ? 'Por favor escreve aqui o link para o teu perfil na twitch.' : ''
+          }`,
         ),
       );
       if (roleName === 'streamer') {

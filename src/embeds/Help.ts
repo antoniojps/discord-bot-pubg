@@ -3,13 +3,15 @@ export const HelpMessageLfs = (channel: string) =>
 Para  procurar uma squad entra numa sala e escreve \`lfs\` no canal ${channel}, se tiveres solo não precisas estar numa sala. Podes adicionar uma nota ao pedido com \`lfs "nota"\`.  Se alguém reagir ao teu pedido ✉️ serás notificado por mensagem privada pelo bot 🤖. Se pretendes cancelar a procura escreve \`-\`.
 `;
 
-export const HelpMessageDefault = (rolesChannel: string, lfsChannel: string) => `
+export const HelpMessageDefault = (rolesChannel: string, lfsChannel: string, availableRoles: string[]) => `
 Olá! Sou um 🤖 bot desenvolvido para a comunidade portuguesa de PUBG de modo a facilitar a procura de jogadores.
 
 Neste canal ${rolesChannel} escreve \`/link PUBG_NICKNAME\` substituindo \`PUBG_NICKNAME\` pelo nome da tua conta de modo a receber os roles e stats no discord.
 ${HelpMessageLfs(lfsChannel)}
 Usa \`/update\` no canal ${rolesChannel} para atualizar as estatísticas.
-Usa \`/role "NOME_DA_ROLE"\` no canal ${rolesChannel} para adicionar ou remover uma role.
+Usa \`/role "NOME_DA_ROLE"\` no canal ${rolesChannel} para adicionar ou remover uma role. Roles disponíveis: ${availableRoles
+  .map((r) => `\`"${r}"\``)
+  .join(',')}
 Usa \`/help\` em cada canal para obter ajuda.
 `;
 
