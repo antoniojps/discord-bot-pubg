@@ -321,6 +321,12 @@ export const resolvers: Resolvers = {
       EmbedErrorMessage(`<@${message.author.id}> role "${roleName}" não existe. Escreveste corretamente?`),
     );
   },
+  '/order': async (client, message) => {
+    await message.delete();
+    await message.channel.send(
+      'https://media1.tenor.com/images/ff97f5136e14b88c76ea8e8488e23855/tenor.gif?itemid=13286953',
+    );
+  },
 };
 
 export const COMMANDS = Object.keys(resolvers);
