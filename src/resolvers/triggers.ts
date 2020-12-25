@@ -1,7 +1,7 @@
 import { Client, Message } from 'discord.js';
 import { logError } from '../services/logs';
 import { clearMessage } from './../utils/helpers';
-import AntiSpam from './../services/spam';
+// import AntiSpam from './../services/spam';
 
 type TriggerResolver = (client: Client, message: Message) => Promise<void>;
 
@@ -27,13 +27,13 @@ export const triggersResolver = async (client: Client, message: Message) => {
   if (message.author.bot) return;
 
   try {
-    AntiSpam.log(message.author.id, message.content);
-    const isSpamDetected = await AntiSpam.checkMessageInterval(message); // Check sent messages interval
-    if (isSpamDetected) {
-      await message.delete();
-      await message.author.send(`<@${message.author.id}>, por favor evita o spam.`);
-      throw new Error(`Spam detected: ${message.content} by <@${message.author.id}>`);
-    }
+    // AntiSpam.log(message.author.id, message.content);
+    // const isSpamDetected = await AntiSpam.checkMessageInterval(message); // Check sent messages interval
+    // if (isSpamDetected) {
+    //   await message.delete();
+    //   await message.author.send(`<@${message.author.id}>, por favor evita o spam.`);
+    //   throw new Error(`Spam detected: ${message.content} by <@${message.author.id}>`);
+    // }
 
     const content = message.content ? clearMessage(message.content) : '';
     if (content === '') return;

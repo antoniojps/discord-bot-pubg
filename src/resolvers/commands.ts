@@ -9,7 +9,7 @@ import { addStatsRoles, removeRoles } from '../services/roles';
 import { logError, logAdminMessage } from '../services/logs';
 import { computeChannelUsers, computeUserPartialFromDocument, clearQuotes } from './../utils/helpers';
 import User from './../models/user';
-import AntiSpam from './../services/spam';
+// import AntiSpam from './../services/spam';
 
 type CommandResolver = (client: Client, message: Message, argumentsParsed: argv.Arguments) => Promise<void>;
 
@@ -339,13 +339,13 @@ export const commandsResolver = async (client: Client, message: Message) => {
   if (!COMMANDS.includes(command)) return null;
 
   try {
-    AntiSpam.log(message.author.id, message.content);
-    const isSpamDetected = await AntiSpam.checkMessageInterval(message); // Check sent messages interval
-    if (isSpamDetected) {
-      await message.delete();
-      await message.author.send(`<@${message.author.id}>, por favor evita o spam de comandos.`);
-      throw new Error(`Spam detected: ${message.content} by <@${message.author.id}>`);
-    }
+    // AntiSpam.log(message.author.id, message.content);
+    // const isSpamDetected = await AntiSpam.checkMessageInterval(message); // Check sent messages interval
+    // if (isSpamDetected) {
+    //   await message.delete();
+    //   await message.author.send(`<@${message.author.id}>, por favor evita o spam de comandos.`);
+    //   throw new Error(`Spam detected: ${message.content} by <@${message.author.id}>`);
+    // }
 
     const resolver = resolvers[command];
     await resolver(client, message, commandArgv);
