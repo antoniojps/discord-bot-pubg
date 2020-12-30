@@ -61,11 +61,11 @@ export const COMMANDS = Object.keys(resolvers);
 
 export const commandsResolver = async (client: Client, message: Message) => {
   const isAdminChannel = message.channel.id === process.env.ADMIN_CHANNEL_ID;
-  const commandArgv = argv(message.content.toLowerCase().trim());
+  const commandArgv = argv(message.content);
 
   const [command] = commandArgv._;
 
-  if (!COMMANDS.includes(command)) return null;
+  if (!COMMANDS.includes(command.toLowerCase().trim())) return null;
 
   try {
     // AntiSpam.log(message.author.id, message.content);
