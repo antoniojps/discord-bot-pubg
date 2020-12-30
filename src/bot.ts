@@ -1,6 +1,6 @@
 import { Client } from 'discord.js';
 import dotenv from 'dotenv';
-import { commandsResolver } from './resolvers/commands';
+import { commandsResolver } from './resolvers/commands/index';
 import { reactionsResolver } from './resolvers/reactions';
 import { triggersResolver } from './resolvers/triggers';
 import { voiceResolver } from './resolvers/voice';
@@ -30,8 +30,8 @@ client.on('error', (error) => {
 
 client.on('message', async (message) => {
   if (message.author.bot) return;
-  commandsResolver(client, message);
-  triggersResolver(client, message);
+  await commandsResolver(client, message);
+  await triggersResolver(client, message);
 });
 
 client.on('messageReactionAdd', async (reaction, user) => {

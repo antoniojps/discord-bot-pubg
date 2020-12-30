@@ -36,7 +36,6 @@ export type LfsUsers =
 
 export enum EmbedType {
   lfs = 'lfs',
-  cancelado = 'cancelado',
 }
 
 export type LfsEmbedProps = {
@@ -51,10 +50,27 @@ export const NOT_FOUND_MESSAGE = '¯\\_(ツ)_/¯';
 
 const computeConclusion = (type: EmbedType, users: LfsUsers, authorId: string, channel?: Channel | null) => {
   if (users && users.length >= 4) return ``;
-  if (type === EmbedType.cancelado) return `Pedido de procura de jogadores cancelado.`;
   return channel
     ? `Para te juntares reaje com ✉️ ou envia PM <@${authorId}>`
     : `Para convidar entra num canal e reaje com 👍 ou envia PM <@${authorId}>`;
+};
+
+const computeAuthorAvatar = (channel: Channel, users: LfsUsers, author?: Author) => {
+  if (users?.length === 4) {
+    return `https://i.imgur.com/uww1e1O.png?channelId=${channel.id}&channelName=${encodeURIComponent(
+      channel.name ?? '',
+    )}`;
+  }
+
+  if (author && author.id && author.avatar) {
+    return `https://cdn.discordapp.com/avatars/${author.id}/${author.avatar}.png?size=128&channelId=${
+      channel.id
+    }&channelName=${encodeURIComponent(channel.name ?? '')}`;
+  }
+
+  return `https://i.imgur.com/cqmAKYJ.png?channelId=${channel.id}&channelName=${encodeURIComponent(
+    channel.name ?? '',
+  )}`;
 };
 
 export const EmbedLookingForSomeone = ({ author, channel, users, note, footer }: LfsEmbedProps) => {
@@ -66,10 +82,11 @@ export const EmbedLookingForSomeone = ({ author, channel, users, note, footer }:
   const missingPlayers = users ? 4 - users.length : 0;
   const missingPlayersContent = users && users.length ? ` +${4 - users.length} ` : ' ';
 
-  const title = missingPlayers > 0 ? `Procura${missingPlayersContent}jogadores` : `Squad completa`;
-  const titleChannel = channel ? `${title} - ${channel.name}` : title;
+  const title = missingPlayers > 0 ? `Procura${missingPlayersContent}jogadores` : `A jogar`;
+  const titleChannel = channel ? `${title} em ${channel.name}` : title;
   const embedType = footer ?? EmbedType.lfs;
   const conclusion = computeConclusion(embedType, users, author.id, channel);
+  const footerComputed = users?.length === 4 ? '' : footer ?? EmbedType.lfs;
 
   const Embed = new MessageEmbed()
     .setColor('#0099ff')
@@ -81,7 +98,7 @@ export const EmbedLookingForSomeone = ({ author, channel, users, note, footer }:
         ${note ? `> ${note}` : ''}
       `,
     )
-    .setFooter(footer ?? EmbedType.lfs)
+    .setFooter(footerComputed)
     .setTimestamp();
 
   const thumbnail =
@@ -90,16 +107,7 @@ export const EmbedLookingForSomeone = ({ author, channel, users, note, footer }:
       : inProgressMedia[Math.floor(Math.random() * inProgressMedia.length)];
 
   if (channel) {
-    Embed.setThumbnail(thumbnail).setAuthor(
-      titleChannel,
-      author.avatar
-        ? `https://cdn.discordapp.com/avatars/${author.id}/${author.avatar}.png?size=128&channelId=${
-            channel.id
-          }&channelName=${encodeURIComponent(channel.name ?? '')}`
-        : `https://i.imgur.com/cqmAKYJ.png?channelId=${channel.id}&channelName=${encodeURIComponent(
-            channel.name ?? '',
-          )}`,
-    );
+    Embed.setThumbnail(thumbnail).setAuthor(titleChannel, computeAuthorAvatar(channel, users, author));
   }
   return Embed;
 };
