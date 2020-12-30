@@ -89,7 +89,7 @@ export const EmbedLookingForSomeone = ({ author, channel, users, note, footer }:
   const footerComputed = users?.length === 4 ? '' : footer ?? EmbedType.lfs;
 
   const Embed = new MessageEmbed()
-    .setColor('#0099ff')
+    .setColor(users?.length === 4 ? '#2FCC71' : '#0099ff')
     .setDescription(
       `
         ${usersList}
