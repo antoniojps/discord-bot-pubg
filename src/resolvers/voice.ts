@@ -42,6 +42,10 @@ export const voiceResolver = async (client: Client, oldState: VoiceState, newSta
         ? [...newMessageParsed.embedParsed.users, userNew]
         : newMessageParsed.embedParsed.users;
 
+      if (usersNew.length >= 4) {
+        await newMessageParsed.message.reactions.removeAll();
+      }
+
       await message.edit('', EmbedLookingForSomeone({ ...newMessageParsed.embedParsed, users: usersNew }));
     }
 
